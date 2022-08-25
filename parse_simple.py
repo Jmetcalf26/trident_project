@@ -1,38 +1,73 @@
 import clang.cindex
+import astor
+from helper_functions import *
 from ast import *
 
 def create_ast_node(n):
-    node = Constant()
+    stars()
+    nt = str(n.kind)[11:]
     tokens = list(n.get_tokens())
-    node.value = int(tokens[0].spelling)
-    print("new created node:", dump(node), end=' ') 
+    print("IN CREATE AST NODE, I want to create a", nt)
+
+    if nt == "INTEGER_LITERAL":
+        print("creating a new Constant...")
+        node = Constant()
+        node.value = int( tokens[0].spelling) 
+
+    if nt == "FUNCTION_DECL":
+        print("creating a new FunctionDef...")
+        node = FunctionDef()
+        node.name = tokens[1].spelling
+        node.body = []
+        node.decorator_list = []
+
+        # this is a total cop out for the super simple main that takes
+        # no arguments, in order to do this better you will have to parse through
+        # all tokens between the two parentheses and add them as arg objects.
+        
+        node.args = add_args() 
+
+    if nt == "COMPOUND_STMT":
+        print("creating a new CompoundStmt (If)...")
+        # If(test=Constant(value=True, kind=None),
+        node = If()
+        node.test = Constant()
+        node.test.value = True 
+        node.test.kind = None
+        node.body=[]
+        node.orelse = []
+
+    if nt == "RETURN_STMT":
+        print("creating a new Return...")
+        node = Return()
+
+    print("new created node:", dump(node)) 
+    stars()
     return node
 
-def rec_ast_node(n, depth):
-    if len(list(n.get_children())) == 0:
+def rec_ast_node(n, new_ast, depth):
+    # print out if a node is a leaf node
+    # print out if a node is a function declaration
+
+    # print out information about the node for diagnostic purposes
+    nt = str(n.kind)[11:]
+
+    # get the children into their own list
+    child_list = list(n.get_children())
+    child_nodes = []
+
+    # create a list of new nodes to be added to the body of the previous statement
+    for child in child_list:
+        child_nodes.append(create_ast_node(child))
+
+    for c in range(len(child_list)):
+        if nt == "RETURN_STMT":
+            new_ast.value = rec_ast_node(child_list[c], child_nodes[c], depth+1)
+        else:
+            new_ast.body.append(rec_ast_node(child_list[c], child_nodes[c], depth+1))
+    if len(list(n.get_children()))==0:
         print("leaf node")
-    else:
-        print(' '*depth, str(n.kind)[11:], end=' ')
-        child_list = list(n.get_children())
-
-    
-def print_ast(node, depth):
-    # print out information about the node, including the tokens that it corresponds to
-    print(' '*depth, str(node.kind)[11:], end=' ')
-    # simple check to see if this is a simple enough node to turn into an ast node
-    if str(node.kind)[11:] == 'INTEGER_LITERAL':
-        new_node = create_ast_node(node)
-
-    print("num children:", len(list(node.get_children())), end=' ')
-    print("tokens:", end=' ')
-    for t in node.get_tokens():
-        print(t.spelling, end=' ')
-    print()
-
-    # Recurse for children of this node
-    for c in node.get_children():
-        print_ast(c, depth+1)
-
+    return new_ast
 
 # create the index
 index = clang.cindex.Index.create()
@@ -41,31 +76,38 @@ tu = index.parse("simple.c")
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
-print_ast(root, 0)
+root_ast = Module()
+root_ast.body = []
+root_ast.type_ignores = []
+#print_ast(root, 0)
+root_ast = rec_ast_node(root, root_ast, 0)
+root_ast = add_main_check(root_ast)
 
-rec_ast_node(root, 0)
+
+stars()
+print("WHAT I GOT:")
+print(dump(root_ast))
+stars()
+
+
 print()
-
+stars()
+print("WHAT IT SHOULD BE:")
 print(dump(parse(open('simple.py').read())))
+stars()
 
-# print(dump(parse('not 3', mode='eval')))
-# print(dump(parse('3', mode='eval')))
-# print(dump(parse('print(3)', mode='eval')))
-# a = parse('123', mode='eval')
-# print(a)
-# a = parse('not 3', mode='eval')
-# print(a)
+stars()
+print("RESULTING PYTHON CODE FROM C CODE:")
+print(astor.to_source(root_ast))
+output = astor.to_source(root_ast)
+stars()
 
-# node = UnaryOp()
-# node.op = USub()
-# node.operand = Constant()
-# node.operand.value = 5
-# node.operand.lineno = 0
-# node.operand.col_offset = 0
-# node.lineno = 0
-# node.col_offset = 0
-
-# print(node)
-# print(dump(node))
-
+stars()
+of_name = input("Enter filename to save output to, no file extension [press enter for default]: ")
+if of_name == "":
+    of_name = "output_file"
+of = open(of_name+'.py', 'w')
+of.write(output)
+print("CODE SAVED TO " + of_name + ".py")
+stars()
 
