@@ -15,6 +15,9 @@ def create_ast_node(n):
         print("creating a new Constant...")
         node = Constant(int(tokens[0].spelling))
 
+    if nt == "PARM_DECL":
+        print("creating a new arg...")
+
     # a function definition takes the following arguments:
       #  name - a raw string of the function name.
 
@@ -29,6 +32,10 @@ def create_ast_node(n):
     if nt == "FUNCTION_DECL":
         print("creating a new FunctionDef...")
         node = FunctionDef(tokens[1].spelling, body=[], decorator_list=[])
+        print("arguments:", end=' ')
+        for a in n.get_arguments():
+            print(a.spelling, end=' ')
+        print()
         # this is a total cop out for the super simple main that takes
         # no arguments, in order to do this better you will have to parse through
         # all tokens between the two parentheses and add them as arg objects.
@@ -81,6 +88,14 @@ tu = index.parse("simple.c")
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
+stars()
+print("C AST:")
+print_c_ast(root, 0)
+stars()
+stars()
+print("IDEAL PYTHON AST:")
+print(dump(parse(open('simple.py').read()), indent=4))
+stars()
 root_ast = Module([],[])
 #print_ast(root, 0)
 root_ast = rec_ast_node(root, root_ast, 0)
@@ -94,10 +109,6 @@ stars()
 
 
 print()
-stars()
-print("WHAT IT SHOULD BE:")
-print(dump(parse(open('simple.py').read())))
-stars()
 
 stars()
 print("RESULTING PYTHON CODE FROM C CODE:")

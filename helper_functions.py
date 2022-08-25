@@ -43,3 +43,10 @@ def add_args():
 def stars():
     print("\n"+"*"*50)
 
+
+def print_c_ast(n, depth): 
+    nt = str(n.kind)[11:]
+    print((' '*depth) + nt)
+
+    for c in n.get_children():
+        print_c_ast(c, depth+1)
