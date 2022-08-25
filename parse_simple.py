@@ -4,38 +4,43 @@ from helper_functions import *
 from ast import *
 
 def create_ast_node(n):
+    # determine the type of node to create
     stars()
     nt = str(n.kind)[11:]
     tokens = list(n.get_tokens())
     print("IN CREATE AST NODE, I want to create a", nt)
 
+    # in the case of an int, a literal integer is created, with only a value
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
-        node = Constant()
-        node.value = int( tokens[0].spelling) 
+        node = Constant(int(tokens[0].spelling))
 
+    # a function definition takes the following arguments:
+      #  name - a raw string of the function name.
+
+      #  args - an arguments node.
+
+      #  body - the list of nodes inside the function.
+
+      #  decorator_list - the list of decorators to be applied, stored outermost first (i.e. the first in the list will be applied last).
+
+      #  returns - the return annotation.
+        
     if nt == "FUNCTION_DECL":
         print("creating a new FunctionDef...")
-        node = FunctionDef()
-        node.name = tokens[1].spelling
-        node.body = []
-        node.decorator_list = []
-
+        node = FunctionDef(tokens[1].spelling, body=[], decorator_list=[])
         # this is a total cop out for the super simple main that takes
         # no arguments, in order to do this better you will have to parse through
         # all tokens between the two parentheses and add them as arg objects.
         
         node.args = add_args() 
+        # it does not need a returns, I'm not 100% sure why at this point but it just works without one.
 
+    # there is no equivalent to a compound statement in python ASTs, so instead for a 'block' like
+    # the compound statement functions as I am simply using an If True: statement.
     if nt == "COMPOUND_STMT":
         print("creating a new CompoundStmt (If)...")
-        # If(test=Constant(value=True, kind=None),
-        node = If()
-        node.test = Constant()
-        node.test.value = True 
-        node.test.kind = None
-        node.body=[]
-        node.orelse = []
+        node = If(Constant(value=True, kind=None), [], [])
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -76,9 +81,7 @@ tu = index.parse("simple.c")
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
-root_ast = Module()
-root_ast.body = []
-root_ast.type_ignores = []
+root_ast = Module([],[])
 #print_ast(root, 0)
 root_ast = rec_ast_node(root, root_ast, 0)
 root_ast = add_main_check(root_ast)
