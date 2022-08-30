@@ -1,5 +1,5 @@
 def booga(a):
-    return a
+    return a+1
 def main():
     return booga(1)
 

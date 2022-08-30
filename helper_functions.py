@@ -54,3 +54,16 @@ def print_c_ast(n, depth):
 
     for c in n.get_children():
         print_c_ast(c, depth+1)
+def extended_node_info(n):
+    print('spelling:', n.spelling)
+    print('raw_comment:', n.raw_comment)
+    print('mangled_name:', n.mangled_name)
+    print('kind:', n.kind)
+    typ = n.type
+    print('type information:', end='\n\t')
+    print("kind:", typ.kind, end='\n\t')
+    print("spelling:", typ.spelling, end='\n\t')
+    print("get_named_type():", typ.get_named_type(), end='\n\t')
+    print("get_fields():", typ.get_fields(), end='\n\t')
+    print("get_class_type():", typ.get_class_type(), end='\n\t')
+    print("get_array_size():", typ.get_array_size(), end='\n\t')

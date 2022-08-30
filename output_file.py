@@ -1,6 +1,6 @@
 def booga(a):
-    return a
+    return a + 1
 
 
 def main():
-    return booga(1)
+    return booga(booga(1) * 10)

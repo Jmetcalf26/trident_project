@@ -1,8 +1,8 @@
 int booga(int a){
-	return a;
+	return a+1;
 }
 int main(){
-	return booga(1);
+	return booga(booga(1)*10);
 }
 
 
