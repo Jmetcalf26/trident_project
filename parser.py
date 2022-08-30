@@ -80,11 +80,13 @@ def create_ast_node(n):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
         print_node_info(n)
+        extended_node_info(n)
         node = create_ast_node(list(n.get_children())[0])
 
     if nt == "DECL_REF_EXPR":
         print("creating a new Name...")
         node = Name(n.spelling, Load())
+        extended_node_info(n)
         print_node_info(n)
 
     if nt == "CALL_EXPR":
@@ -101,6 +103,7 @@ def create_ast_node(n):
         children = list(n.get_children())
         operator = tokens[len(list(children[0].get_tokens()))].spelling
         print("operator:", operator)
+        node.op = translate_operator(operator)
         if operator == '+':
             node.op = Add()
         elif operator == '-':
