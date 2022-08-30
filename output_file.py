@@ -1,7 +1,6 @@
+def booga(a):
+    return a
+
+
 def main():
-    if True:
-        return 0
-
-
-if __name__ == '__main__':
-    main()
+    return booga(1)
