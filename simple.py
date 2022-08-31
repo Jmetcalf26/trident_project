@@ -1,7 +1,9 @@
 def booga(a):
-    return a+1
+    a[0] = 1
+    return a[0]+1
 def main():
-    return booga(1)
+    a = [1]
+    return booga(a)
 
 # if __name__ == "__main__":
 #     main()

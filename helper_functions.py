@@ -1,6 +1,8 @@
 from ast import *
 def print_node_info(n):
     print(n.kind, n.spelling)
+    print('is_statement:', n.kind.is_statement())
+    print('is_expression:', n.kind.is_expression())
     num_args = len(list(n.get_arguments()))
     print('num_args:', num_args)
     children = list(n.get_children())
@@ -44,6 +46,7 @@ def translate_operator(operator):
         op = BitXor()
     elif operator == '&':
         op = BitAnd()
+
     # maybe add this one? I don't know, but it's present in the python ast library
     # elif operator == '@':
     #     op = MatMult()
@@ -106,19 +109,28 @@ def print_c_ast(n, depth):
 def extended_node_info(n):
     print('spelling:', n.spelling)
     print('raw_comment:', n.raw_comment)
+    print('result_type:', n.result_type)
+    print_type_info(n.result_type)
     print('mangled_name:', n.mangled_name)
     print('kind:', n.kind)
     print('lexical_parent:', n.lexical_parent)
     print('semantic_parent:', n.semantic_parent)
     print('linkage:', n.linkage)
     print('referenced:', n.referenced)
+    print('='*10)
     print_node_info(n.referenced)
-    typ = n.type
+    print('='*10)
+    print_type_info(n.type)
+def print_type_info(typ):
+    print('-'*10, end='\n\t')
     print('type information:', end='\n\t')
-    print("kind:", typ.kind, end='\n\t')
+    print("kind:", typ.kind.spelling, end='\n\t')
     print("spelling:", typ.spelling, end='\n\t')
     print("get_named_type():", typ.get_named_type(), end='\n\t')
     print("get_fields():", typ.get_fields(), end='\n\t')
+    print("get_result():", typ.get_result().kind.spelling, end='\n\t')
     print("get_class_type():", typ.get_class_type(), end='\n\t')
     print("get_array_size():", typ.get_array_size(), end='\n\t')
     print('get_declaration():', typ.get_declaration())
+    print('-'*10, end='\n\t')
+

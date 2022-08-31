@@ -4,7 +4,7 @@ def booga(a):
 
 def main():
     a = [1]
-    return booga(a[0])
+    return booga[0](a[0])
 
 
 if __name__ == '__main__':
