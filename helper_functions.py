@@ -18,8 +18,32 @@ def print_node_info(n):
     print("|".join(t.spelling for t in n.get_tokens()))
     return
 
+def translate_u_operator(operator):
+    op = None 
+    if operator == '!':
+        op = Not()
+    elif operator == '-':
+        op = USub()
+    elif operator == '+':
+        op = UAdd()
+    elif operator == '~':
+        op = Invert()
+    return op
+
 def translate_operator(operator):
     op = None 
+    if operator == '==':
+        op = Eq()
+    if operator == '!=':
+        op = NotEq()
+    if operator == '<':
+        op = Lt()
+    if operator == '<=':
+        op = LtE()
+    if operator == '>':
+        op = Gt()
+    if operator == '>=':
+        op = GtE()
     if operator == '+':
         op = Add()
     elif operator == '-':
@@ -98,7 +122,7 @@ def stars():
 
 def print_c_ast(n, depth): 
     nt = str(n.kind)[11:]
-    print((' '*depth) + nt, n, end=' ')
+    print((' '*depth) + nt, end=' ')
     print("|".join(t.spelling for t in n.get_tokens()))
     # for t in n.get_tokens():
     #     print(t.spelling, end=' ')

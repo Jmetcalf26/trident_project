@@ -15,6 +15,7 @@ def create_ast_node(n, name_opt=Load()):
     stars()
     nt = str(n.kind)[11:]
     tokens = list(n.get_tokens())
+    children = list(n.get_children())
     print("IN CREATE AST NODE, I want to create a", nt)
 
     # in the case of an int, a literal integer is created, with only a value
@@ -29,9 +30,22 @@ def create_ast_node(n, name_opt=Load()):
     if nt=="COMPOUND_STMT":
         print("creating a new CompoundStmt (If)...")
         node = If(Constant(value=True, kind=None), [], [])
-        children = list(n.get_children())
         node.body = create_ast_list(children)
 
+    if nt == "WHILE_STMT":
+        print("creating a new While...")
+        if len(children) > 2:
+            node = While(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [create_ast_node(children[2])])
+        else:
+            node = While(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [])
+        
+    if nt == "IF_STMT":
+        print("creating a new If...")
+        if len(children) > 2:
+            node = If(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [create_ast_node(children[2])])
+        else:
+            node = If(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [])
+        
     if nt == "FUNCTION_DECL":
         print("creating a new FunctionDef... num children:", len(list(n.get_children())))
         print("children:")
@@ -45,7 +59,6 @@ def create_ast_node(n, name_opt=Load()):
         node.args = add_args() 
 
         # create the child list
-        children = list(n.get_children())
 
         # add a list of nodes for the arguments to the function
         node.args.args = create_ast_list(children[:num_args])
@@ -57,7 +70,6 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "DECL_STMT":
         print("creating a new something or another...")
-        children = list(n.get_children())
         node = create_ast_node(children[0])
 
     # value=List(
@@ -66,19 +78,18 @@ def create_ast_node(n, name_opt=Load()):
     #         ctx=Load())),
 
     if nt == "VAR_DECL":
-        children = list(n.get_children())
         node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
         node = Return()
-        node.value = create_ast_node(list(n.get_children())[0])
+        node.value = create_ast_node(children[0])
 
 
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
         print_node_info(n)
-        node = create_ast_node(list(n.get_children())[0])
+        node = create_ast_node(children[0])
 
     # Subscript(
     #     value=Name(id='a', ctx=Load()),
@@ -100,7 +111,6 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         extended_node_info(n)
         node = Call([], [], [])
-        children = list(n.get_children())
         #node.func = Name(children[0].spelling, Load())
         node.func = create_ast_node(children[0])
         node.args = create_ast_list(children[1:])
@@ -109,13 +119,22 @@ def create_ast_node(n, name_opt=Load()):
         # just adding an expr to all of them breaks all function calls that are not entire statements
         # node = Expr(node)
 
+
+    if nt == "UNARY_OPERATOR":
+        operator = tokens[0].spelling
+        print("operator:", operator)
+        op = translate_u_operator(operator)
+        node = UnaryOp(op, create_ast_node(children[0]))
+
+        
     if nt == "BINARY_OPERATOR":
         node = BinOp()
-
-        children = list(n.get_children())
+        
         operator = tokens[len(list(children[0].get_tokens()))].spelling
         print("operator:", operator)
-        if operator == "=":
+        if operator in ['==', '!=', '<', '<=', '>', '>=']:
+            node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
+        elif operator == "=":
             print("EQUALS SIGN, ASSIGNMENT")
             node = Assign([create_ast_node(children[0], Store())], create_ast_node(children[1]))
         else: 
