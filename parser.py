@@ -1,27 +1,33 @@
 import clang.cindex
+from clang.cindex import CursorKind
 import astor
 from helper_functions import *
 from ast import *
 
 
-def create_ast_list(node_list):
-    nl = []
-    for n in node_list:
-        nl.append(create_ast_node(n))
-    return nl 
+def create_stmt_list(node_list):
+    return [force_stmt(create_ast_node(n)) for n in node_list]
+def create_expr_list(node_list):
+    return [create_ast_node(n) for n in node_list]
+
+def force_stmt(n):
+    if isinstance(n, stmt):
+        return n
+    else:
+        return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
     # determine the type of node to create
     stars()
     nt = str(n.kind)[11:]
-    tokens = list(n.get_tokens())
+    tokens = list((t.spelling for t in n.get_tokens()))
     children = list(n.get_children())
     print("IN CREATE AST NODE, I want to create a", nt)
 
     # in the case of an int, a literal integer is created, with only a value
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
-        node = Constant(int(tokens[0].spelling))
+        node = Constant(int(tokens[0]))
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -30,28 +36,35 @@ def create_ast_node(n, name_opt=Load()):
     if nt=="COMPOUND_STMT":
         print("creating a new CompoundStmt (If)...")
         node = If(Constant(value=True, kind=None), [], [])
-        node.body = create_ast_list(children)
+        node.body = create_stmt_list(children)
+
+    if nt == "FOR_STMT":
+        print("creating a new For (actually a While)...")
+        decl_node = create_ast_node(children[0])
+        comp_node = create_ast_node(children[1])
+        iter_node = create_ast_node(children[2])
+        bod = create_stmt_list(children[3].get_children())
+        bod.append(iter_node)
+
+        node = If(Constant(value=True, kind=None), [decl_node, While(comp_node, bod, [])], [])
 
     if nt == "WHILE_STMT":
         print("creating a new While...")
-        if len(children) > 2:
-            node = While(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [create_ast_node(children[2])])
-        else:
-            node = While(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [])
+        node = While(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
         
     if nt == "IF_STMT":
         print("creating a new If...")
         if len(children) > 2:
-            node = If(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [create_ast_node(children[2])])
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
         else:
-            node = If(create_ast_node(children[0]), create_ast_list(children[1].get_children()), [])
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
         
     if nt == "FUNCTION_DECL":
         print("creating a new FunctionDef... num children:", len(list(n.get_children())))
         print("children:")
         for i in n.get_children():
             print(str(i.kind)[11:], i.spelling)
-        node = FunctionDef(tokens[1].spelling, body=[], decorator_list=[])
+        node = FunctionDef(tokens[1], body=[], decorator_list=[])
         # get the number of arguments
         num_args = len(list(n.get_arguments()))
 
@@ -61,10 +74,10 @@ def create_ast_node(n, name_opt=Load()):
         # create the child list
 
         # add a list of nodes for the arguments to the function
-        node.args.args = create_ast_list(children[:num_args])
+        node.args.args = create_expr_list(children[:num_args])
 
         # add a list of nodes for the body of the function, using the guaranteed compound statement as the last child to cut it out entirely
-        node.body = create_ast_list(children[len(children)-1].get_children())
+        node.body = create_stmt_list(children[len(children)-1].get_children())
 
         # it does not need a returns, I'm not 100% sure why at this point but it just works without one.
 
@@ -72,13 +85,8 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new something or another...")
         node = create_ast_node(children[0])
 
-    # value=List(
-    #     elts=[
-    #             Constant(value=1)],
-    #         ctx=Load())),
-
     if nt == "VAR_DECL":
-        node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
+        node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -102,7 +110,7 @@ def create_ast_node(n, name_opt=Load()):
             name = 'print'
         else:
             name = n.spelling
-        if "FUNCTION" in str(n.referenced.kind):
+        if n.referenced.kind == CursorKind.FUNCTION_DECL:
             node = Name(name, name_opt)
         else:
             node = Subscript(Name(name, Load()), Constant(0), name_opt)
@@ -113,30 +121,38 @@ def create_ast_node(n, name_opt=Load()):
         node = Call([], [], [])
         #node.func = Name(children[0].spelling, Load())
         node.func = create_ast_node(children[0])
-        node.args = create_ast_list(children[1:])
-        # function calls are not going to work until I figure out how to properly couch function calls that
-        # appear on a statement by themselves
-        # just adding an expr to all of them breaks all function calls that are not entire statements
-        # node = Expr(node)
+        # List([create_ast_node(children[0])], Load())
+        node.args = [List([c], Load()) for c in create_expr_list(children[1:])]
 
+    if nt == "COMPOUND_ASSIGNMENT_OPERATOR":
+        print("creating a new AugAssign...")
+        operator = tokens[1][0]
+        node = AugAssign(create_ast_node(children[0], name_opt=Store()), translate_operator(operator), create_ast_node(children[1]))
 
     if nt == "UNARY_OPERATOR":
-        operator = tokens[0].spelling
+        print("creating a new unary op...")
+        operator = tokens[0]
         print("operator:", operator)
-        op = translate_u_operator(operator)
-        node = UnaryOp(op, create_ast_node(children[0]))
-
+        if operator == '&' or operator == '*':
+            print("pointer nonsense")
+        if '++' in tokens:
+            node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
+        elif '--' in tokens:
+            node = AugAssign(create_ast_node(children[0], name_opt=Store()), Sub(), Constant(1))
+        else:
+            op = translate_u_operator(operator)
+            node = UnaryOp(op, create_ast_node(children[0]))
         
     if nt == "BINARY_OPERATOR":
         node = BinOp()
         
-        operator = tokens[len(list(children[0].get_tokens()))].spelling
+        operator = tokens[len(list(children[0].get_tokens()))]
         print("operator:", operator)
         if operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
             print("EQUALS SIGN, ASSIGNMENT")
-            node = Assign([create_ast_node(children[0], Store())], create_ast_node(children[1]))
+            node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
         else: 
             node.op = translate_operator(operator)
             node.left = create_ast_node(children[0])
@@ -167,7 +183,9 @@ stars()
 root = tu.cursor
 root_ast = Module([],[])
 childs = list(root.get_children())
-root_ast.body = create_ast_list(childs)
+
+
+root_ast.body = create_stmt_list(childs)
 
 root_ast = add_main_check(root_ast)
 
