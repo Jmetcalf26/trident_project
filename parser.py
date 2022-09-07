@@ -23,6 +23,7 @@ def create_ast_node(n, name_opt=Load()):
     tokens = list((t.spelling for t in n.get_tokens()))
     children = list(n.get_children())
     print("IN CREATE AST NODE, I want to create a", nt)
+    print("|".join(t for t in tokens))
 
     # in the case of an int, a literal integer is created, with only a value
     if nt == "INTEGER_LITERAL":
@@ -83,10 +84,16 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "DECL_STMT":
         print("creating a new something or another...")
+        print_node_info(n)
         node = create_ast_node(children[0])
 
     if nt == "VAR_DECL":
-        node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
+        print_node_info(n)
+        if n.type.get_canonical().kind.spelling == 'Pointer':
+            print("AYE YO WE ABOUTTA POINTER")
+            node = Assign([Name(n.spelling, name_opt=Store())], Call(Name('Pointer', Load()), [List([create_ast_node(children[0])], Load()), Constant(0)], []))
+        else:
+            node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -99,10 +106,6 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         node = create_ast_node(children[0])
 
-    # Subscript(
-    #     value=Name(id='a', ctx=Load()),
-    #     slice=Constant(value=0),
-    #     ctx=Load()),
 
     if nt == "DECL_REF_EXPR":
         print("creating a new Name...")
@@ -133,9 +136,13 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new unary op...")
         operator = tokens[0]
         print("operator:", operator)
-        if operator == '&' or operator == '*':
+        if operator == '&':
             print("pointer nonsense")
-        if '++' in tokens:
+            node = Attribute(create_ast_node(children[0]), 'index', Load())
+        elif operator == '*':
+            print("pointer nonsense")
+            node = Call(Attribute(create_ast_node(children[0]), 'get', Load()), [], [])
+        elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Sub(), Constant(1))
@@ -184,10 +191,9 @@ root = tu.cursor
 root_ast = Module([],[])
 childs = list(root.get_children())
 
-
-root_ast.body = create_stmt_list(childs)
-
-root_ast = add_main_check(root_ast)
+root_ast.body.append(add_pointer_class())
+root_ast.body.extend(create_stmt_list(childs))
+root_ast.body.append(add_main_check())
 
 
 
@@ -199,7 +205,6 @@ stars()
 print("WHAT I GOT:")
 print(dump(root_ast, indent=4))
 stars()
-
 
 print()
 

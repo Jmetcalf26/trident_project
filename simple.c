@@ -1,8 +1,7 @@
-#include <stdio.h>
 int main(){
 	int a = 1;
-	int * b = &a;
-	int c = *b;	
+	int * b = &a+3;
+	int c = *b;
 	return 0;
 }
 

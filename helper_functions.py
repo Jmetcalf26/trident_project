@@ -1,6 +1,10 @@
 from ast import *
 def print_node_info(n):
     print(n.kind, n.spelling)
+    print('get_canonical().spelling:', n.type.get_canonical().spelling)
+    print('get_canonical().kind:', n.type.get_canonical().kind.spelling)
+    print('get_class_type():', n.type.get_class_type().kind.spelling)
+    print('get_pointee():', n.type.get_pointee().kind.spelling)
     print('is_statement:', n.kind.is_statement())
     print('is_expression:', n.kind.is_expression())
     num_args = len(list(n.get_arguments()))
@@ -76,31 +80,29 @@ def translate_operator(operator):
     #     op = MatMult()
     return op
 
-def add_main_check(rn):
-    i = If()
-    i.test = Compare()
-    i.test.left = Name()
-    i.test.left.id = '__name__'
-    i.test.left.ctx = Load()
-    i.test.ops = []
-    i.test.ops = [Eq()]
-    c = Constant()
-    c.value = '__main__'
-    c.kind = None
-    i.test.comparators = [c]
-    e = Expr()
-    ca = Call()
-    n = Name()
-    n.id = 'main'
-    n.ctx = Load()
-    ca.func = n
-    ca.args = []
-    ca.keywords = []
-    e.value = ca
-    i.body = [e]
-    i.orelse = []
-    rn.body.append(i)
-    return rn
+def add_main_check():
+    return If(Compare(Name('__name__', Load()), [Eq()], [Constant('__main__')]), [Expr(Call(Name('main', Load()), [], []))], [])
+
+def add_pointer_class():
+    #  class ast.ClassDef(name, bases, keywords, starargs, kwargs, body, decorator_list)
+    cd = ClassDef('Pointer', [], [], decorator_list=[])
+    fd = FunctionDef(
+            '__init__', 
+            arguments([], [arg('self'), arg('array'), arg('index')], defaults=[]), 
+            [
+                Assign([Attribute(Name('self', Load()), 'array', Store())], Name('array', Load())), 
+                Assign([Attribute(Name('self', Load()), 'index', Store())], Name('index', Load()))
+            ],
+            [])
+    fd2 = FunctionDef(
+            'get', 
+            arguments([], [], defaults=[]), 
+            [
+                Return(Subscript(Attribute(Name('self', Load()), 'array', Load()), Attribute(Name('self', Load()), 'index', Load()), Load()))
+            ],
+            [])
+    cd.body = [fd, fd2]
+    return cd
 
 def add_args():
     e = []
