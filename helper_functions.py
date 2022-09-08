@@ -2,7 +2,7 @@ from ast import *
 def print_node_info(n):
     print(n.kind, n.spelling)
     print('get_canonical().spelling:', n.type.get_canonical().spelling)
-    print('get_canonical().kind:', n.type.get_canonical().kind.spelling)
+    print('get_canonical().kind:', n.type.get_canonical().kind)
     print('get_class_type():', n.type.get_class_type().kind.spelling)
     print('get_pointee():', n.type.get_pointee().kind.spelling)
     print('is_statement:', n.kind.is_statement())
@@ -102,6 +102,13 @@ def add_pointer_class():
             ],
             [])
     cd.body = [fd, fd2]
+    return cd
+
+def add_pointer_import():
+    cd = ImportFrom(
+            module='pointer',
+            names=[alias(name='*')],
+            level=0)
     return cd
 
 def add_args():
