@@ -83,26 +83,13 @@ def translate_operator(operator):
 def add_main_check():
     return If(Compare(Name('__name__', Load()), [Eq()], [Constant('__main__')]), [Expr(Call(Name('main', Load()), [], []))], [])
 
-def add_pointer_class():
-    #  class ast.ClassDef(name, bases, keywords, starargs, kwargs, body, decorator_list)
-    cd = ClassDef('Pointer', [], [], decorator_list=[])
-    fd = FunctionDef(
-            '__init__', 
-            arguments([], [arg('self'), arg('array'), arg('index')], defaults=[]), 
-            [
-                Assign([Attribute(Name('self', Load()), 'array', Store())], Name('array', Load())), 
-                Assign([Attribute(Name('self', Load()), 'index', Store())], Name('index', Load()))
-            ],
-            [])
-    fd2 = FunctionDef(
-            'get', 
-            arguments([], [], defaults=[]), 
-            [
-                Return(Subscript(Attribute(Name('self', Load()), 'array', Load()), Attribute(Name('self', Load()), 'index', Load()), Load()))
-            ],
-            [])
-    cd.body = [fd, fd2]
-    return cd
+# def add_pointer_class():
+#     #  class ast.ClassDef(name, bases, keywords, starargs, kwargs, body, decorator_list)
+#     cd = ClassDef('Pointer', [], [], decorator_list=[])
+#     fd = FunctionDef('_init__', arguments([], [arg('self'), arg('array'), arg('index')], defaults=[]), [Assign([Attribute(Name('self', Load()), 'array', Store())], Name('array', Load())), Assign([Attribute(Name('self', Load()), 'index', Store())], Name('index', Load()))], [])
+#     fd2 = FunctionDef('get', arguments([], [], defaults=[]), [Return(Subscript(Attribute(Name('self', Load()), 'array', Load()), Attribute(Name('self', Load()), 'index', Load()), Load()))], [])
+#     cd.body = [fd, fd2]
+#     return cd
 
 def add_pointer_import():
     cd = ImportFrom(

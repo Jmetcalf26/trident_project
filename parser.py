@@ -131,6 +131,9 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new AugAssign...")
         operator = tokens[1][0]
         node = AugAssign(create_ast_node(children[0], name_opt=Store()), translate_operator(operator), create_ast_node(children[1]))
+    if nt == "PAREN_EXPR":
+        print("creating a new parentheses thing...")
+        node = create_ast_node(children[0])
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")
@@ -152,6 +155,7 @@ def create_ast_node(n, name_opt=Load()):
             node = UnaryOp(op, create_ast_node(children[0]))
         
     if nt == "BINARY_OPERATOR":
+        print("creating a new binary op...")
         node = BinOp()
         
         operator = tokens[len(list(children[0].get_tokens()))]
