@@ -195,10 +195,11 @@ def create_ast_node(n, name_opt=Load()):
 # create the index
 index = clang.cindex.Index.create()
 # create the translation unit
-tu = index.parse("simple.c", args=['-I.'])
+tu = index.parse("simple.c", args=['-Iheaders'])
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
+# get the diagnostic
 
 stars()
 print("C AST:")
@@ -228,7 +229,12 @@ print("WHAT I GOT:")
 print(dump(root_ast, indent=4))
 stars()
 
-print()
+stars()
+print("DIAGNOSTICS REPORT:")
+diag = tu.diagnostics
+for i in diag:
+    print(i)
+stars()
 
 stars()
 print("RESULTING PYTHON CODE FROM C CODE:")
