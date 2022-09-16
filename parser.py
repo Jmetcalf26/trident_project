@@ -89,10 +89,24 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "VAR_DECL":
         print_node_info(n)
-        # if n.type.get_canonical().kind.spelling == 'Pointer':
-        #     print("AYE YO WE ABOUTTA POINTER")
-        #     node = Assign([Name(n.spelling, name_opt=Store())], create_ast_node(children[0]))
-        node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
+        print("get_type(n)", get_type(n))
+        if get_type(n) == "VARIABLEARRAY":
+            pass
+        if get_type(n) == "CONSTANTARRAY":
+            if get_type(children[0]) == "INT":
+                array_size = int(list(children[0].get_tokens())[0].spelling)
+                if len(children) > 1:
+                    array = create_ast_node(children[1])
+                else:
+                    array = List([], Load())
+                array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
+            else:
+                array = create_ast_node(children[0])
+            node = Assign([Name(n.spelling, name_opt=Store())], List([Call(Name('Pointer', Load()), [array, Constant(0)], [])], Load()))
+        elif len(children) < 1:
+            node = Assign([Name(n.spelling, name_opt=Store())], List([Constant(0)], Load()))
+        else:
+            node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -131,9 +145,15 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new AugAssign...")
         operator = tokens[1][0]
         node = AugAssign(create_ast_node(children[0], name_opt=Store()), translate_operator(operator), create_ast_node(children[1]))
+
     if nt == "PAREN_EXPR":
         print("creating a new parentheses thing...")
         node = create_ast_node(children[0])
+
+    if nt == "INIT_LIST_EXPR":
+        print("creating a new List...")
+        node = List(create_expr_list(children), Load())
+
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")
@@ -141,11 +161,8 @@ def create_ast_node(n, name_opt=Load()):
         print("operator:", operator)
         if operator == '&':
             node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0)], [])
-            print("pointer nonsense")
-            # node = Attribute(create_ast_node(children[0]), 'index', Load())
         elif operator == '*':
-            print("pointer nonsense")
-            node = Call(Attribute(create_ast_node(children[0]), 'get', Load()), [], [])
+            node = Call(Attribute(create_ast_node(children[0]), 'deref', Load()), [], [])
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
@@ -178,7 +195,7 @@ def create_ast_node(n, name_opt=Load()):
 # create the index
 index = clang.cindex.Index.create()
 # create the translation unit
-tu = index.parse("simple.c")
+tu = index.parse("simple.c", args=['-I.'])
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor

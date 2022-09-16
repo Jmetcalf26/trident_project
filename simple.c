@@ -1,6 +1,7 @@
+#include <stdio.h>
 int main(){
-	int c[2] = {1, 2};
-	return 0;
+	int n = 3;
+	int a = booga();
+	return a;
+
 }
-
-

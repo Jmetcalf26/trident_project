@@ -22,6 +22,9 @@ def print_node_info(n):
     print("|".join(t.spelling for t in n.get_tokens()))
     return
 
+def get_type(node):
+    return str(node.type.get_canonical().kind)[9:]
+
 def translate_u_operator(operator):
     op = None 
     if operator == '!':
