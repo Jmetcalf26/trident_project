@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 import clang.cindex
 from clang.cindex import CursorKind
+from clang.cindex import TypeKind
 import astor
 from helper_functions import *
 from ast import *
@@ -26,6 +28,11 @@ def create_ast_node(n, name_opt=Load()):
     print("|".join(t for t in tokens))
 
     # in the case of an int, a literal integer is created, with only a value
+    if nt == "STRING_LITERAL":
+        print("creating a new String...")
+        print_node_info(n)
+        node = Constant(eval(n.spelling))
+        pass
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
         node = Constant(int(tokens[0]))
@@ -61,6 +68,9 @@ def create_ast_node(n, name_opt=Load()):
             node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
         
     if nt == "FUNCTION_DECL":
+        if n.type.get_canonical().kind == TypeKind.FUNCTIONPROTO:
+            print("ignoring function prototype")
+            return
         print("creating a new FunctionDef... num children:", len(list(n.get_children())))
         print("children:")
         for i in n.get_children():
@@ -90,9 +100,12 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "VAR_DECL":
         print_node_info(n)
         print("get_type(n)", get_type(n))
-        if get_type(n) == "VARIABLEARRAY":
-            pass
-        if get_type(n) == "CONSTANTARRAY":
+        if n.spelling == "id_like_to_see_someone_make_this_variable":
+            print("making an import statemetn")
+            node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
+        elif get_type(n) == "VARIABLEARRAY":
+            node = Assign([Name(n.spelling, Store())], List([BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0]))], Load()), Load())
+        elif get_type(n) == "CONSTANTARRAY":
             if get_type(children[0]) == "INT":
                 array_size = int(list(children[0].get_tokens())[0].spelling)
                 if len(children) > 1:
@@ -102,11 +115,11 @@ def create_ast_node(n, name_opt=Load()):
                 array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
             else:
                 array = create_ast_node(children[0])
-            node = Assign([Name(n.spelling, name_opt=Store())], List([Call(Name('Pointer', Load()), [array, Constant(0)], [])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [array, Constant(0)], [])], Load()))
         elif len(children) < 1:
-            node = Assign([Name(n.spelling, name_opt=Store())], List([Constant(0)], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
         else:
-            node = Assign([Name(n.spelling, name_opt=Store())], List([create_ast_node(children[0])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -123,14 +136,10 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "DECL_REF_EXPR":
         print("creating a new Name...")
         print_node_info(n)
-        if n.spelling == 'printf':
-            name = 'print'
-        else:
-            name = n.spelling
         if n.referenced.kind == CursorKind.FUNCTION_DECL:
-            node = Name(name, name_opt)
+            node = Name(n.spelling, name_opt)
         else:
-            node = Subscript(Name(name, Load()), Constant(0), name_opt)
+            node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
 
     if nt == "CALL_EXPR":
         print_node_info(n)
@@ -150,6 +159,11 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new parentheses thing...")
         node = create_ast_node(children[0])
 
+    if nt == "ARRAY_SUBSCRIPT_EXPR":
+        print("creating a new array index...")
+        print_node_info(n)
+        node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
+        
     if nt == "INIT_LIST_EXPR":
         print("creating a new List...")
         node = List(create_expr_list(children), Load())
@@ -180,7 +194,6 @@ def create_ast_node(n, name_opt=Load()):
         if operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
-            print("EQUALS SIGN, ASSIGNMENT")
             node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
         else: 
             node.op = translate_operator(operator)

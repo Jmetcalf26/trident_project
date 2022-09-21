@@ -1,7 +1,8 @@
 #include <stdio.h>
-#pragma GCC warning "heyyyyyyyyyyy"
 int main(){
-	int n = 3
-	int a = booga();
-	return a;
+	int a[] = {1, 2, 3};
+	char * b = (char *) a;
+	b[5] = 3;
+	puts(a[1]);
+	return 0;
 }

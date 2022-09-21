@@ -1,6 +1,7 @@
 from Pointer import *
 def main():
-    a = [1]
+    n = 3
+    a = [1] * n
     b = Pointer(a, 0)
     c = b.get()
     d = b.index

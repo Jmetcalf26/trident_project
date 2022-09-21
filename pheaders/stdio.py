@@ -1,2 +1,2 @@
 def puts(string):
-    print(string)
+    print(string[0])
