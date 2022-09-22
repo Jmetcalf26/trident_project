@@ -1,6 +1,11 @@
 from ast import *
+
 def print_node_info(n):
     print(n.kind, n.spelling)
+    print('objc_type_encoding:', n.objc_type_encoding)
+    if "ARRAY" in str(n.type.get_canonical().kind):
+        print('element_type:', n.type.element_type.spelling)
+        print('element_count:', n.type.element_count)
     print('get_canonical().spelling:', n.type.get_canonical().spelling)
     print('get_canonical().kind:', n.type.get_canonical().kind)
     print('get_class_type():', n.type.get_class_type().kind.spelling)
@@ -94,9 +99,9 @@ def add_main_check():
 #     cd.body = [fd, fd2]
 #     return cd
 
-def add_pointer_import():
+def add_helper_classes():
     cd = ImportFrom(
-            module='pointer',
+            module='helper_classes',
             names=[alias(name='*')],
             level=0)
     return cd

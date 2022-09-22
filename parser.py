@@ -107,7 +107,8 @@ def create_ast_node(n, name_opt=Load()):
             node = Assign([Name(n.spelling, Store())], List([BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0]))], Load()), Load())
         elif get_type(n) == "CONSTANTARRAY":
             if get_type(children[0]) == "INT":
-                array_size = int(list(children[0].get_tokens())[0].spelling)
+                array_size = n.type.element_count
+                array_type = n.type.element_type
                 if len(children) > 1:
                     array = create_ast_node(children[1])
                 else:
@@ -227,7 +228,7 @@ root = tu.cursor
 root_ast = Module([],[])
 childs = list(root.get_children())
 
-root_ast.body.append(add_pointer_import())
+root_ast.body.append(add_helper_classes())
 root_ast.body.extend(create_stmt_list(childs))
 root_ast.body.append(add_main_check())
 

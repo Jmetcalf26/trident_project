@@ -1,4 +1,4 @@
-from pointer import *
+from helper_classes import *
 from pheaders.stdio import *
 
 
@@ -7,13 +7,9 @@ def booga():
 
 
 def main():
-    n = [3]
-    a = [[0] * n[0]]
-    b = [booga()]
-    puts([a[0][2]])
-    s = ['string\n']
-    puts([s[0]])
-    return b[0]
+    a = [Pointer([1, 2], 0)]
+    b = [a[0][1]]
+    return 0
 
 
 if __name__ == '__main__':
