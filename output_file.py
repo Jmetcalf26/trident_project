@@ -1,16 +1,5 @@
 from helper_classes import *
-from pheaders.stdio import *
-
-
-def booga():
-    return 10
-
-
-def main():
-    a = [Pointer([1, 2], 0)]
-    b = [a[0][1]]
-    return 0
-
-
+a = [array([1, 2, 3, 4], 4)]
+b = [Pointer(a, 0)]
 if __name__ == '__main__':
     main()

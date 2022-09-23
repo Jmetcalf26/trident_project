@@ -1,6 +1,2 @@
-#include <stdio.h>
-int main(){
-	int a[2] = {1, 2};
-	int b = a[1];
-	return 0;
-}
+int a[4] = {1, 2, 3, 4};
+void * b = &a;
