@@ -1,19 +1,23 @@
 from ast import *
 
 def print_node_info(n):
-    print(n.kind, n.spelling)
-    print('objc_type_encoding:', n.objc_type_encoding)
-    if "ARRAY" in str(n.type.get_canonical().kind):
-        print('element_type:', n.type.element_type.spelling)
-        print('element_type size:', n.type.element_type.get_size())
-        print('element_count:', n.type.element_count)
+    print("n.kind", n.kind)
+    print("n.spelling", n.spelling)
+    #if "ARRAY" in str(n.type.get_canonical().kind):
+    #print('element_type:', n.type.element_type.spelling)
+    #print('element_type size:', n.type.element_type.get_size())
+    #print('element_count:', n.type.element_count)
+    print('get_array_element_type:', n.type.get_array_element_type().spelling)
+    print('get_array_element_type size:', n.type.get_array_element_type().get_size())
     print('get_canonical().spelling:', n.type.get_canonical().spelling)
     print('get_canonical().kind:', n.type.get_canonical().kind)
     print('get_class_type():', n.type.get_class_type().kind.spelling)
     print('get_size():', n.type.get_size())
-    print('get_pointee():', n.type.get_pointee().kind.spelling)
-    print('is_statement:', n.kind.is_statement())
-    print('is_expression:', n.kind.is_expression())
+    print('get_pointee().kind:', n.type.get_pointee().kind)
+    print('get_pointee().kind.spelling:', n.type.get_pointee().kind.spelling)
+    print('get_pointee().spelling:', n.type.get_pointee().spelling)
+    print('get_pointee().get_size():', n.type.get_pointee().get_size())
+    print('get_pointee().get_array_element_type().size:', n.type.get_pointee().get_array_element_type().get_size())
     num_args = len(list(n.get_arguments()))
     print('num_args:', num_args)
     children = list(n.get_children())

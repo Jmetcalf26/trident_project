@@ -1,2 +1,5 @@
-int a[4] = {1, 2, 3, 4};
-void * b = &a;
+int main(){
+				char a[] = {'A', 'B', 'C'};
+				char * b = &a;
+				int * c = &a;
+}

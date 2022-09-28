@@ -36,6 +36,10 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
         node = Constant(int(tokens[0]))
+    if nt == "CHARACTER_LITERAL":
+        print("creating a new Constant...")
+        print_node_info(n)
+        node = Constant(eval(tokens[0]))
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -59,14 +63,14 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "WHILE_STMT":
         print("creating a new While...")
         node = While(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
-        
+
     if nt == "IF_STMT":
         print("creating a new If...")
         if len(children) > 2:
             node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
         else:
             node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
-        
+
     if nt == "FUNCTION_DECL":
         if n.type.get_canonical().kind == TypeKind.FUNCTIONPROTO:
             print("ignoring function prototype")
@@ -105,7 +109,7 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
         elif get_type(n) == "VARIABLEARRAY":
             print("variable array")
-            node = Assign([Name(n.spelling, Store())], List([Call(Name('array', Load()), [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0])), Constant(n.element_type.get_size())], [])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0])), Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
 
         elif get_type(n) == "CONSTANTARRAY":
             print("constant array")
@@ -118,11 +122,13 @@ def create_ast_node(n, name_opt=Load()):
             else:
                 array = List([], Load())
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
-            node = Assign([Name(n.spelling, Store())], List([Call(Name('array', Load()), [array, Constant(n.type.element_type.get_size())], [])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [array, Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
         elif len(children) < 1:
             node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
         else:
             node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
+        if get_type(n) == "POINTER":
+            node.value.elts[0].args[2].value = n.type.get_pointee().get_size()
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
@@ -174,10 +180,14 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")
+        print_node_info(n)
         operator = tokens[0]
         print("operator:", operator)
         if operator == '&':
-            node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0)], [])
+            size = n.type.get_pointee().get_size()
+            if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
+                size = n.type.get_pointee().get_array_element_type().get_size()
+            node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0), Constant(size)], [])
         elif operator == '*':
             node = Call(Attribute(create_ast_node(children[0]), 'deref', Load()), [], [])
         elif '++' in tokens:
@@ -236,10 +246,10 @@ root_ast.body.append(add_main_check())
 
 
 
-stars()
-print("IDEAL PYTHON AST:")
-print(dump(parse(open('simple.py').read()), indent=4))
-stars()
+# stars()
+# print("IDEAL PYTHON AST:")
+# print(dump(parse(open('simple.py').read()), indent=4))
+# stars()
 stars()
 print("WHAT I GOT:")
 print(dump(root_ast, indent=4))
