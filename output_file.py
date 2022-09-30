@@ -2,9 +2,9 @@ from helper_classes import *
 
 
 def main():
-    a = [Pointer(['A', 'B', 'C'], 0, 1)]
-    b = [Pointer(a, 0, 1)]
-    c = [Pointer(a, 0, 4)]
+    a = [Data(1, 4)]
+    b = [Data('c', 1)]
+    c = [Data(a[0] + b[0], 4)]
 
 
 if __name__ == '__main__':

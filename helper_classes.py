@@ -18,6 +18,14 @@ class Pointer:
     def __str__(self):
         return "index: " + str(self.index) + "size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.arr])
 
+
+class Data:
+    def __init__(self, value, size):
+        self.value = value
+        self.size = size
+    def __add__(self, a):
+        return  
+
 class array:
     def __init__(self, arr, size):
         self.arr = arr

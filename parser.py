@@ -5,6 +5,7 @@ from clang.cindex import TypeKind
 import astor
 from helper_functions import *
 from ast import *
+import sys
 
 
 def create_stmt_list(node_list):
@@ -19,6 +20,7 @@ def force_stmt(n):
         return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
+
     # determine the type of node to create
     stars()
     nt = str(n.kind)[11:]
@@ -27,7 +29,6 @@ def create_ast_node(n, name_opt=Load()):
     print("IN CREATE AST NODE, I want to create a", nt)
     print("|".join(t for t in tokens))
 
-    # in the case of an int, a literal integer is created, with only a value
     if nt == "STRING_LITERAL":
         print("creating a new String...")
         print_node_info(n)
@@ -35,11 +36,20 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
+        print_node_info(n)
+        # node = Call(Name('Data', Load()), [Constant(int(tokens[0])), Constant(n.type.get_size())], [])
         node = Constant(int(tokens[0]))
+
     if nt == "CHARACTER_LITERAL":
         print("creating a new Constant...")
         print_node_info(n)
         node = Constant(eval(tokens[0]))
+
+    if nt == "UNEXPOSED_EXPR":
+        print("creating a new UNEXPOSED_EXPR (If)...")
+        print_node_info(n)
+        # node = Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])
+        node = create_ast_node(children[0])
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -84,7 +94,7 @@ def create_ast_node(n, name_opt=Load()):
         num_args = len(list(n.get_arguments()))
 
         # populate all of the argument arrays 
-        node.args = add_args() 
+        node.args = add_args()
 
         # create the child list
 
@@ -126,7 +136,8 @@ def create_ast_node(n, name_opt=Load()):
         elif len(children) < 1:
             node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
         else:
-            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])], Load()))
+            # node = Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])
         if get_type(n) == "POINTER":
             node.value.elts[0].args[2].value = n.type.get_pointee().get_size()
 
@@ -136,10 +147,6 @@ def create_ast_node(n, name_opt=Load()):
         node.value = create_ast_node(children[0])
 
 
-    if nt == "UNEXPOSED_EXPR":
-        print("creating a new UNEXPOSED_EXPR (If)...")
-        print_node_info(n)
-        node = create_ast_node(children[0])
 
 
     if nt == "DECL_REF_EXPR":
@@ -172,7 +179,7 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new array index...")
         print_node_info(n)
         node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
-        
+
     if nt == "INIT_LIST_EXPR":
         print("creating a new List...")
         node = List(create_expr_list(children), Load())
@@ -197,23 +204,23 @@ def create_ast_node(n, name_opt=Load()):
         else:
             op = translate_u_operator(operator)
             node = UnaryOp(op, create_ast_node(children[0]))
-        
+
     if nt == "BINARY_OPERATOR":
         print("creating a new binary op...")
-        node = BinOp()
-        
+
         operator = tokens[len(list(children[0].get_tokens()))]
         print("operator:", operator)
         if operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
             node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
-        else: 
-            node.op = translate_operator(operator)
-            node.left = create_ast_node(children[0])
-            node.right = create_ast_node(children[1])
-        
-    print("new created node:", dump(node)) 
+        else:
+            print(get_type(children[0]), get_type(children[1]))
+            print(children[0].type.get_size(), children[1].type.get_size())
+            node = BinOp(create_ast_node(children[0]), translate_operator(operator), create_ast_node(children[1]))
+
+
+    print("new created node:", dump(node))
     stars()
     return node
 
@@ -226,7 +233,10 @@ print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
 # get the diagnostic
-
+STRICT_TYPING = False
+if len(sys.argv) > 1:
+    if sys.argv[1] == '--strict-typing' or sys.argv[1] == '-s':
+        STRICT_TYPING = True
 stars()
 print("C AST:")
 print_c_ast(root, 0)
@@ -269,9 +279,9 @@ output = astor.to_source(root_ast)
 stars()
 
 stars()
-of_name = input("Enter filename to save output to, no file extension [press enter for default]: ")
-if of_name == "":
-    of_name = "output_file"
+#of_name = input("Enter filename to save output to, no file extension [press enter for default]: ")
+#if of_name == "":
+of_name = "output_file"
 of = open(of_name+'.py', 'w')
 of.write(output)
 print("CODE SAVED TO " + of_name + ".py")

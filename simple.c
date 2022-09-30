@@ -1,5 +1,5 @@
 int main(){
-				char a[] = {'A', 'B', 'C'};
-				char * b = &a;
-				int * c = &a;
+	int a = 1;
+	char b = 'c';
+	int c = a + b;
 }
