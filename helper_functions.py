@@ -1,5 +1,28 @@
 from ast import *
 
+
+def add_overflow_check(n, node):
+    stars()
+    print("INSIDE INT ERROR CHECK")
+    stars()
+    #largest_value_of_data_size = 2 ** max_place_value - 1
+    #smallest_value_of_data_size = 2 ** min_place_value - 1
+    #if value > largest_value_of_data_size:
+    node = Module([node], [])
+    if get_type(n) == "INT":
+       check = If(Compare(Name(n.spelling), [Gt()], [Constant((2 ** 31) -1)]), [Expr([Call(Name('print'), [Constant('NOOOO')], [])])], [])
+       check.orelse.append(If(Compare(Name(n.spelling), [Lt()], [Constant( -2 ** 31 )]), [Expr([Call(Name('print'), [Constant('NOOOO')], [])])], []))
+       node.body.append(check)
+
+    if get_type(n) == "UINT":
+       check = If(Compare(Name(n.spelling), [Gt()], [Constant((2 ** 32) -1)]), [Expr([Call(Name('print'), [Constant('NOOOO')], [])])], [])
+       node.body.append(check)
+
+    stars()
+    print("LEAVING INT ERROR CHECK")
+    stars()
+    return node
+
 def print_node_info(n):
     print("n.kind", n.kind)
     print("n.spelling", n.spelling)

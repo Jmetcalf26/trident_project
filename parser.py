@@ -40,6 +40,11 @@ def create_ast_node(n, name_opt=Load()):
         # node = Call(Name('Data', Load()), [Constant(int(tokens[0])), Constant(n.type.get_size())], [])
         node = Constant(int(tokens[0]))
 
+    if nt == "FLOATING_LITERAL":
+        print("creating a new Constant...")
+        print_node_info(n)
+        node = Constant(float(tokens[0]))
+
     if nt == "CHARACTER_LITERAL":
         print("creating a new Constant...")
         print_node_info(n)
@@ -117,6 +122,7 @@ def create_ast_node(n, name_opt=Load()):
         if n.spelling == "id_like_to_see_someone_make_this_variable":
             print("making an import statement")
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
+
         elif get_type(n) == "VARIABLEARRAY":
             print("variable array")
             node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0])), Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
@@ -136,18 +142,17 @@ def create_ast_node(n, name_opt=Load()):
         elif len(children) < 1:
             node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
         else:
-            node = Assign([Name(n.spelling, Store())], List([Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])], Load()))
-            # node = Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])
-        if get_type(n) == "POINTER":
-            node.value.elts[0].args[2].value = n.type.get_pointee().get_size()
+            #node = Assign([Name(n.spelling, Store())], List([Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])], Load()))
+            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], []), Load())
+        if STRICT_TYPING:
+            node = add_overflow_check(n, node)
+        #if get_type(n) == "POINTER":
+            #node.value.elts[0].args[2].value = n.type.get_pointee().get_size()
 
     if nt == "RETURN_STMT":
         print("creating a new Return...")
         node = Return()
         node.value = create_ast_node(children[0])
-
-
-
 
     if nt == "DECL_REF_EXPR":
         print("creating a new Name...")
@@ -217,6 +222,8 @@ def create_ast_node(n, name_opt=Load()):
         else:
             print(get_type(children[0]), get_type(children[1]))
             print(children[0].type.get_size(), children[1].type.get_size())
+            # overflow = check_for_int_error(operator, children)
+            # print(overflow)
             node = BinOp(create_ast_node(children[0]), translate_operator(operator), create_ast_node(children[1]))
 
 
