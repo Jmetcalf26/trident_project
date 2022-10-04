@@ -1,0 +1,14 @@
+dr. roche stuff to-do
+test out printf
+build a readme for how to run the program
+continue to work on typing stuff
+library functions
+pointer aliasing
+get an ic210 program to work
+
+3 big lines of focus right now as of 10/4:
+	Integer Errors
+	Basic library calls
+	Pointer aliasing and array functionality
+
+

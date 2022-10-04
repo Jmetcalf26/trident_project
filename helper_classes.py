@@ -15,6 +15,8 @@ class Pointer:
         return self.array[self.index+n]
     def __getitem__(self, i):
         return self.array[i]
+    def __setitem__(self, i, a):
+        self.array[i] = a
     def __str__(self):
         return "index: " + str(self.index) + "size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.arr])
 

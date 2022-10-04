@@ -235,7 +235,20 @@ def create_ast_node(n, name_opt=Load()):
 # create the index
 index = clang.cindex.Index.create()
 # create the translation unit
-tu = index.parse("simple.c", args=['-Iheaders'])
+filename = 'simple.c'
+if len(sys.argv) > 1:
+    if '-i' in sys.argv:
+        try:
+            filename = sys.argv[sys.argv.index('-i')+1]
+        except:
+            print("Usage: ./parser.py -i <filename>")
+            sys.exit(1)
+try:
+    tu = index.parse(filename, args=['-Iheaders'])
+except:
+    print("Invalid filename")
+    exit(1)
+
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
