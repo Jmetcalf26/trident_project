@@ -45,6 +45,8 @@ def print_node_info(n):
     print('num_args:', num_args)
     children = list(n.get_children())
     print('num_children:', len(children))
+    tokens = list(n.get_tokens())
+    print('num_tokens:', len(tokens))
     print("arguments:", end=' ')
     for a in n.get_arguments():
         print(a.spelling, end=' ')
@@ -163,7 +165,17 @@ def print_c_ast(n, depth):
 
     for c in n.get_children():
         print_c_ast(c, depth+1)
+
 def extended_node_info(n):
+    print('n.kind.is_attribute', n.kind.is_attribute())
+    print('n.kind.is_declaration', n.kind.is_declaration())
+    print('n.kind.is_expression', n.kind.is_expression())
+    print('n.kind.is_invalid', n.kind.is_invalid())
+    print('n.kind.is_preprocessing', n.kind.is_preprocessing())
+    print('n.kind.is_reference', n.kind.is_reference())
+    print('n.kind.is_statement', n.kind.is_statement())
+    print('n.kind.is_translation_unit', n.kind.is_translation_unit())
+    print('n.kind.is_unexposed', n.kind.is_unexposed())
     print('spelling:', n.spelling)
     print('raw_comment:', n.raw_comment)
     print('result_type:', n.result_type)
@@ -178,6 +190,7 @@ def extended_node_info(n):
     print_node_info(n.referenced)
     print('='*10)
     print_type_info(n.type)
+
 def print_type_info(typ):
     print('-'*10, end='\n\t')
     print('type information:', end='\n\t')

@@ -7,6 +7,7 @@ from helper_functions import *
 from ast import *
 import sys
 
+IGNORE_METADATA_MACROS = True
 
 def create_stmt_list(node_list):
     return [force_stmt(create_ast_node(n)) for n in node_list]
@@ -28,6 +29,37 @@ def create_ast_node(n, name_opt=Load()):
     children = list(n.get_children())
     print("IN CREATE AST NODE, I want to create a", nt)
     print("|".join(t for t in tokens))
+
+    if nt == "INCLUSION_DIRECTIVE":
+        if n.kind.is_preprocessing():
+            return
+        print("creating a new Import statement...")
+        print_node_info(n)
+        extended_node_info(n)
+        return
+    if nt == "MACRO_INSTANTIATION":
+        if n.kind.is_preprocessing():
+            return
+        print("creating a new macro instantiation...")
+        print_node_info(n)
+        extended_node_info(n)
+        return
+    if nt == "MACRO_DEFINITION":
+        if n.kind.is_preprocessing():
+            return
+        global IGNORE_METADATA_MACROS
+        if IGNORE_METADATA_MACROS:
+            if tokens[0] == "end_of_metadata_macros":
+                IGNORE_METADATA_MACROS = False
+            return
+        else:
+            print("creating a new Macro...")
+            print_node_info(n)
+            extended_node_info(n)
+            print(tokens[0])
+            if len(tokens) < 2:
+                return
+            node = Assign([Name(tokens[0])], Constant(eval(tokens[1])))
 
     if nt == "STRING_LITERAL":
         print("creating a new String...")
@@ -143,7 +175,7 @@ def create_ast_node(n, name_opt=Load()):
             node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
         else:
             #node = Assign([Name(n.spelling, Store())], List([Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])], Load()))
-            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], []), Load())
+            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
         if STRICT_TYPING:
             node = add_overflow_check(n, node)
         #if get_type(n) == "POINTER":
@@ -244,11 +276,11 @@ if len(sys.argv) > 1:
             print("Usage: ./parser.py -i <filename>")
             sys.exit(1)
 try:
-    tu = index.parse(filename, args=['-Iheaders'])
+    #tu = index.parse(filename, args=['-Iheaders'])
+    tu = index.parse(filename, options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
     print("Invalid filename")
     exit(1)
-
 print("Translation Unit:", tu.spelling, '\n')
 # get the root cursor
 root = tu.cursor
