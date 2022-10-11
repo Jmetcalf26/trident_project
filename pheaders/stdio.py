@@ -15,3 +15,10 @@ def printf(fmt, *args):
 
 def fprintf(stream, fmt, *args):
     print(_cformat(fmt, args), end='', file=stream[0])
+
+def scanf(fmt, *args):
+    fscanf(stdin, fmt, *args)
+
+def fscanf(stream, fmt, *args):
+    inp = input()
+    args = tuple(map(int, inp.split(' ')))

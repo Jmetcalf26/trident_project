@@ -113,19 +113,25 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "IF_STMT":
         print("creating a new If...")
+        print_node_info(n)
         if len(children) > 2:
             node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
         else:
             node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
 
     if nt == "FUNCTION_DECL":
-        if n.type.get_canonical().kind == TypeKind.FUNCTIONPROTO:
+        print_node_info(n)
+        print("n.is_definition():", n.is_definition())
+        print("n.kind.is_declaration():", n.kind.is_declaration())
+        if not n.is_definition():
             print("ignoring function prototype")
             return
+
         print("creating a new FunctionDef... num children:", len(list(n.get_children())))
         print("children:")
         for i in n.get_children():
             print(str(i.kind)[11:], i.spelling)
+            
         node = FunctionDef(tokens[1], body=[], decorator_list=[])
         # get the number of arguments
         num_args = len(list(n.get_arguments()))
@@ -146,7 +152,7 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "DECL_STMT":
         print("creating a new something or another...")
         print_node_info(n)
-        node = create_ast_node(children[0])
+        node = Module(create_stmt_list(children))
 
     if nt == "VAR_DECL":
         print_node_info(n)
@@ -247,7 +253,11 @@ def create_ast_node(n, name_opt=Load()):
 
         operator = tokens[len(list(children[0].get_tokens()))]
         print("operator:", operator)
-        if operator in ['==', '!=', '<', '<=', '>', '>=']:
+        if operator in ['||', '&&']:
+            print("YOOOO BOOL OP MOFO")
+            node = BoolOp(translate_operator(operator), create_expr_list(children))
+
+        elif operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
             node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
@@ -293,10 +303,10 @@ stars()
 print("C AST:")
 print_c_ast(root, 0)
 stars()
-stars()
-print("IDEAL PYTHON AST:")
-print(dump(parse(open('simple.py').read()), indent=4))
-stars()
+#stars()
+#print("IDEAL PYTHON AST:")
+#print(dump(parse(open('simple.py').read()), indent=4))
+#stars()
 
 root = tu.cursor
 root_ast = Module([],[])

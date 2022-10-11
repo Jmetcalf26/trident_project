@@ -75,6 +75,7 @@ def translate_u_operator(operator):
 
 def translate_operator(operator):
     op = None 
+    # Relational Operators
     if operator == '==':
         op = Eq()
     if operator == '!=':
@@ -87,6 +88,7 @@ def translate_operator(operator):
         op = Gt()
     if operator == '>=':
         op = GtE()
+    # Arithmetic Operators
     if operator == '+':
         op = Add()
     elif operator == '-':
@@ -113,6 +115,10 @@ def translate_operator(operator):
         op = BitXor()
     elif operator == '&':
         op = BitAnd()
+    elif operator == '&&':
+        op = And()
+    elif operator == '||':
+        op = Or()
 
     # maybe add this one? I don't know, but it's present in the python ast library
     # elif operator == '@':
