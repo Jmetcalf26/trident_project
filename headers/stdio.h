@@ -1,7 +1,7 @@
 void puts(const char *);
 int printf(const char *, ...);
 int scanf(const char *, ...);
-int id_like_to_see_someone_make_this_variable = 1;
+#define _stdio_inclusion
 
 int booga(){
 	return 10;

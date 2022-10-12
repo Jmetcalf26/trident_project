@@ -8,9 +8,9 @@ def booga():
 
 def main():
     sames = [2]
-    x = [0]
-    y = [0]
-    z = [0]
+    x = [None]
+    y = [None]
+    z = [None]
     while sames[0] > 1:
         printf(['Enter three distinct numbers: '])
         scanf(['%lg %lg %lg'], [Pointer(x, 0, 8)], [Pointer(y, 0, 8)], [

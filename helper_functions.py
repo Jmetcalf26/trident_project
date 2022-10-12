@@ -172,6 +172,17 @@ def print_c_ast(n, depth):
     for c in n.get_children():
         print_c_ast(c, depth+1)
 
+def cursor_bools(n):
+    print('n.kind.is_attribute', n.kind.is_attribute())
+    print('n.kind.is_declaration', n.kind.is_declaration())
+    print('n.kind.is_expression', n.kind.is_expression())
+    print('n.kind.is_invalid', n.kind.is_invalid())
+    print('n.kind.is_preprocessing', n.kind.is_preprocessing())
+    print('n.kind.is_reference', n.kind.is_reference())
+    print('n.kind.is_statement', n.kind.is_statement())
+    print('n.kind.is_translation_unit', n.kind.is_translation_unit())
+    print('n.kind.is_unexposed', n.kind.is_unexposed())
+
 def extended_node_info(n):
     print('n.kind.is_attribute', n.kind.is_attribute())
     print('n.kind.is_declaration', n.kind.is_declaration())

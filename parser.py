@@ -7,7 +7,6 @@ from helper_functions import *
 from ast import *
 import sys
 
-IGNORE_METADATA_MACROS = True
 
 def create_stmt_list(node_list):
     return [force_stmt(create_ast_node(n)) for n in node_list]
@@ -45,21 +44,10 @@ def create_ast_node(n, name_opt=Load()):
         extended_node_info(n)
         return
     if nt == "MACRO_DEFINITION":
-        if n.kind.is_preprocessing():
-            return
-        global IGNORE_METADATA_MACROS
-        if IGNORE_METADATA_MACROS:
-            if tokens[0] == "end_of_metadata_macros":
-                IGNORE_METADATA_MACROS = False
-            return
+        if tokens[0] == "_stdio_inclusion":
+            node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
         else:
-            print("creating a new Macro...")
-            print_node_info(n)
-            extended_node_info(n)
-            print(tokens[0])
-            if len(tokens) < 2:
-                return
-            node = Assign([Name(tokens[0])], Constant(eval(tokens[1])))
+            return
 
     if nt == "STRING_LITERAL":
         print("creating a new String...")
@@ -177,8 +165,9 @@ def create_ast_node(n, name_opt=Load()):
                 array = List([], Load())
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
             node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [array, Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
+
         elif len(children) < 1:
-            node = Assign([Name(n.spelling, Store())], List([Constant(0)], Load()))
+            node = Assign([Name(n.spelling, Store())], List([Constant(None)], Load()))
         else:
             #node = Assign([Name(n.spelling, Store())], List([Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])], Load()))
             node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
@@ -231,6 +220,7 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")
         print_node_info(n)
+        print("get_num_template_arguments():", n.get_num_template_arguments())
         operator = tokens[0]
         print("operator:", operator)
         if operator == '&':
@@ -239,7 +229,8 @@ def create_ast_node(n, name_opt=Load()):
                 size = n.type.get_pointee().get_array_element_type().get_size()
             node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0), Constant(size)], [])
         elif operator == '*':
-            node = Call(Attribute(create_ast_node(children[0]), 'deref', Load()), [], [])
+            node = Attribute(create_ast_node(children[0]), 'value', Load())
+            #node = Subscript(create_ast_node(children[0]), Attribute(create_ast_node(children[0]), 'index', Load()), Store())
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
@@ -254,7 +245,6 @@ def create_ast_node(n, name_opt=Load()):
         operator = tokens[len(list(children[0].get_tokens()))]
         print("operator:", operator)
         if operator in ['||', '&&']:
-            print("YOOOO BOOL OP MOFO")
             node = BoolOp(translate_operator(operator), create_expr_list(children))
 
         elif operator in ['==', '!=', '<', '<=', '>', '>=']:
@@ -268,6 +258,19 @@ def create_ast_node(n, name_opt=Load()):
             # print(overflow)
             node = BinOp(create_ast_node(children[0]), translate_operator(operator), create_ast_node(children[1]))
 
+    if nt == "CSTYLE_CAST_EXPR":
+        print("creating a new cast...")
+        print_node_info(n)
+        print("n.type.get_align():", n.type.get_align())
+        print(get_type(n))
+        if get_type(n) == "INT":
+            node = Call(Name('int'), [create_ast_node(children[0])], [])
+        
+        if get_type(n) == "POINTER":
+            stars()
+            print("CHILD OF POINTER:")
+            print_node_info(children[0])
+            node = Call(Name('Pointer_alias', Load()), [create_ast_node(children[0]), Constant(n.type.get_pointee().get_size())], [])
 
     print("new created node:", dump(node))
     stars()
@@ -286,8 +289,8 @@ if len(sys.argv) > 1:
             print("Usage: ./parser.py -i <filename>")
             sys.exit(1)
 try:
-    tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
-    #tu = index.parse(filename, options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+    #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
+    tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
     print("Invalid filename")
     exit(1)

@@ -17,22 +17,22 @@ class Pointer:
         return self.array[i]
     def __setitem__(self, i, a):
         self.array[i] = a
+    def __setattr__(self, name, value):
+        if name == 'value':
+            self.array[self.index] = value
+        else:
+            super().__setattr__(name, value)
+    def __getattr__(self, name):
+        if name == 'value':
+            return self.array[self.index]
+        else:
+            super().__getattr__(name)
     def __str__(self):
-        return "index: " + str(self.index) + "size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.arr])
+        return "index: " + str(self.index) + " size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.array])
 
 
-# class Data:
-#     def __init__(self, value, size):
-#         self.value = value
-#         self.size = size
-#     def __add__(self, a):
-#         return  
+class Pointer_alias:
+    def __init__(self, pointer, a_size):
+        self.pointer = pointer
+        self.a_size = a_size
 
-class array:
-    def __init__(self, arr, size):
-        self.arr = arr
-        self.size = size
-    def __getitem__(self, i):
-        return self.arr[i]
-    def __str__(self):
-        return "size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.arr])
