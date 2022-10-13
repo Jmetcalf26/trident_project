@@ -7,28 +7,13 @@ def booga():
 
 
 def main():
-    sames = [2]
-    x = [None]
-    y = [None]
-    z = [None]
-    while sames[0] > 1:
-        printf(['Enter three distinct numbers: '])
-        scanf(['%lg %lg %lg'], [Pointer(x, 0, 8)], [Pointer(y, 0, 8)], [
-            Pointer(z, 0, 8)])
-        sames[0] = dupes([x[0]], [y[0]], [z[0]])
-        if dupes([x[0]], [y[0]], [z[0]]) <= 1:
-            return 0
-        printf(['There were %d duplicates. Try again.\n'], [sames[0]])
-    return 0
-
-
-def dupes(x, y, z):
-    sames = [1]
-    if (x[0] == y[0] or y[0] == z[0]) or x[0] == z[0]:
-        sames[0] += 1
-        if x[0] == y[0] and z[0] == y[0]:
-            sames[0] += 1
-    return sames[0]
+    a = [1]
+    b = [Pointer(a, 0, 4)]
+    c = [4 - 2]
+    d = [Pointer_alias(Pointer(c, 0, 4), 1)]
+    printf(['%c\n'], [d[0].value])
+    e = [d[0].value]
+    printf(['%d %d %d\n'], [a[0]], [c[0]], [e[0]])
 
 
 if __name__ == '__main__':

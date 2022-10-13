@@ -35,4 +35,6 @@ class Pointer_alias:
     def __init__(self, pointer, a_size):
         self.pointer = pointer
         self.a_size = a_size
-
+        self.index = self.pointer.index
+    def __str__(self):
+        return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
