@@ -38,3 +38,26 @@ class Pointer_alias:
         self.index = self.pointer.index
     def __str__(self):
         return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
+
+    def __getitem__(self, i):
+        if self.a_size < self.pointer.size:
+            if self.a_size == 1:
+                oi = i // self.pointer.size
+                of = i % self.pointer.size
+            else:
+                oi = i // self.a_size
+                of = i %  self.a_size
+            mask = (1 << 8*self.a_size) - 1
+            #print(bin(mask))
+            #print(hex(self.pointer.array[oi]))
+            #print(of * 8 * self.a_size)
+            value = (self.pointer[oi] >> (of * 8 * self.a_size)) & mask
+            return value
+        elif self.a_size > self.pointer.size:
+            value = 0
+            size_diff = self.a_size // self.pointer.size
+            for j in range(size_diff):
+                shift = 8 * j * self.pointer.size 
+                index = j + (i * size_diff)
+                value += self.pointer[index] << shift
+            return value
