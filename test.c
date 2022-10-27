@@ -13,5 +13,17 @@ int main(){
 	for(int i = 0; i <8; i++)
 		printf("%x ", *(c+i));
 	printf("\n");
+	c[0] = 0x494a;
+	for(int i = 0; i <8; i++)
+		printf("%x ", *(c+i));
+	printf("\n");
+
+	for(int i = 0; i < 4; i++)
+		printf("%x ", *(a+i));
+	printf("\n");
+
+	for(int i = 0; i < 16; i++)
+		printf("%x ", *(b+i));
+	printf("\n");
 	return 0;
 }

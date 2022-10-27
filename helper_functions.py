@@ -1,5 +1,7 @@
 from ast import *
 
+def bin(a):
+    print("{0:b}".format(a))
 
 def add_overflow_check(n, node):
     stars()

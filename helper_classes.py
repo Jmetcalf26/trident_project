@@ -1,4 +1,5 @@
 from sys import *
+from helper_functions import *
 
 class Pointer:
     def __init__(self, array, index, size):
@@ -61,3 +62,17 @@ class Pointer_alias:
                 index = j + (i * size_diff)
                 value += self.pointer[index] << shift
             return value
+        else:
+            return self.pointer[i]
+    def __setitem__(self, i, j):
+        if self.a_size < self.pointer.size:
+            oi = i // self.pointer.size
+            print(oi)
+            of = self.pointer.size - (i % self.pointer.size + 1) * self.a_size
+            print(of)
+            mask = (1 << self.pointer.size*8) - 1
+            bin(mask)
+            mask ^= ((1<<(self.pointer.size-of)*8)-1)
+            bin(mask)
+            self.pointer[oi] &= mask
+            self.pointer[oi] += j << (oi)*8
