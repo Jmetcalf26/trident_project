@@ -52,7 +52,9 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "STRING_LITERAL":
         print("creating a new String...")
         print_node_info(n)
-        node = Constant(eval(n.spelling))
+        text = Constant(eval(n.spelling))
+        node = Call(Name('Pointer', Load()), [text, Constant(0), Constant(1)], [])
+        
 
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
@@ -289,6 +291,7 @@ if len(sys.argv) > 1:
             print("Usage: ./parser.py -i <filename>")
             sys.exit(1)
 try:
+    #tu = index.parse(filename, args=['-Iheaders'])
     #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
     tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
