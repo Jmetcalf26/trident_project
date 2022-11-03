@@ -48,6 +48,18 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
         else:
             return
+    # THIS SHOULD PROBABLY BE ACTUALLY INITIALIZED AT SOME POINT YO!
+    if nt == "ENUM_DECL":
+        return
+    if nt == "TYPEDEF_DECL":
+        return
+    if nt == "STRUCT_DECL":
+        return
+    if nt == "TYPE_REF":
+        return
+    if nt == "BREAK_STMT":
+        node = Break()
+
 
     if nt == "STRING_LITERAL":
         print("creating a new String...")
@@ -71,7 +83,19 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new Constant...")
         print_node_info(n)
         node = Constant(eval(tokens[0]))
+    if nt == "CONDITIONAL_OPERATOR":
+        print_node_info(n)
+        if len(children) > 2:
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
+        else:
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
 
+    if nt == "SWITCH_STMT":
+        print_node_info(n)
+        node = Match(create_ast_node(children[0]), create_stmt_list(children[1].get_children()))
+    if nt == "CASE_STMT":
+        print_node_info(n)
+        node = match_case(MatchValue(create_ast_node(children[0])), create_expr_list(children[1]))
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
         print_node_info(n)

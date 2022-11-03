@@ -44,7 +44,7 @@ class Pointer:
         for i in self.array:
             if i == '\x00':
                 return ret
-            ret += chr(i)
+            ret += i
         #return ret + '\x00'
         return ret
 
