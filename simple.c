@@ -1,10 +1,9 @@
+#define a 2
 #include <stdio.h>
-
 int main(){
-	char * a = "booga";
-	printf("%s\n", a);
-	int x;
-	scanf("%d", &x);
-	
+	int x = a;
+	char * s = "☃\n	☹☙☣";
+	puts(s);
+	return 0;
 }
 

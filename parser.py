@@ -43,11 +43,16 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         extended_node_info(n)
         return
+
     if nt == "MACRO_DEFINITION":
         if tokens[0] == "_stdio_inclusion":
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
+        elif tokens[0] == "_stdlib_inclusion":
+            node = ImportFrom('pheaders.stdlib', [alias(name='*')], 0)
         else:
             return
+
+        
     # THIS SHOULD PROBABLY BE ACTUALLY INITIALIZED AT SOME POINT YO!
     if nt == "ENUM_DECL":
         return
@@ -64,7 +69,10 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "STRING_LITERAL":
         print("creating a new String...")
         print_node_info(n)
-        text = Constant(eval(n.spelling))
+        text = Constant(eval(bytes(n.spelling, 'utf-8').decode()))
+        #print(bytes(ord(x) for x in n.spelling).decode())
+        a = bytes(map(ord, n.spelling))
+        text = Constant(eval(tokens[0]))
         node = Call(Name('Pointer', Load()), [text, Constant(0), Constant(1)], [])
         
 
@@ -93,9 +101,11 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "SWITCH_STMT":
         print_node_info(n)
         node = Match(create_ast_node(children[0]), create_stmt_list(children[1].get_children()))
+
     if nt == "CASE_STMT":
         print_node_info(n)
         node = match_case(MatchValue(create_ast_node(children[0])), create_expr_list(children[1]))
+
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
         print_node_info(n)

@@ -19,9 +19,9 @@ def fflush(stream):
     stream[0].flush()
 
 def puts(string):
-    stdout.write(string[0].encode())
-    stdout.write('\n')
-    stdout.flush()
+    stdout[0].write(str(string[0]).encode())
+    stdout[0].write(b'\n')
+    stdout[0].flush()
 
 def printf(fmt, *args):
     fprintf(stdout, fmt, *args)
