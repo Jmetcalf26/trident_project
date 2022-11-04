@@ -4,12 +4,12 @@
  * https://www.geeksforgeeks.org/switch-statement-cc/
  * ternary operator refreshed by https://en.wikipedia.org/wiki/%3F:
  */
-/*
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-*/
+
 // Shuffles and returns a deck of cards as an array of ints
 int* shuffle(int seed);
 
