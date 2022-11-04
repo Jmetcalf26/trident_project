@@ -7,7 +7,8 @@ from helper_functions import *
 from ast import *
 import sys
 
-
+switch_counter = 0
+switch_stack = []
 def create_stmt_list(node_list):
     return [force_stmt(create_ast_node(n)) for n in node_list]
 def create_expr_list(node_list):
@@ -20,7 +21,7 @@ def force_stmt(n):
         return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
-
+    global switch_counter, switch_stack
     # determine the type of node to create
     stars()
     nt = str(n.kind)[11:]
@@ -100,11 +101,29 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "SWITCH_STMT":
         print_node_info(n)
-        node = Match(create_ast_node(children[0]), create_stmt_list(children[1].get_children()))
+
+        node = Module([])
+        state_name = "__switch_state_status"+str(switch_counter)
+        switch_name = "__switch_var_value"+str(switch_counter) 
+        switch_stack.append((state_name, switch_name))
+        switch_counter += 1
+
+        state = Assign([Name(state_name, Store())], List([Constant(0)], Load()))
+        switch_value = Assign([Name(switch_name, Store())], List([create_ast_node(children[0])], Load()))
+        
+        node.body.append(state)
+        node.body.append(switch_value)
+        node.body.extend(create_stmt_list(children[1].get_children()))
+        switch_stack.pop()
 
     if nt == "CASE_STMT":
         print_node_info(n)
-        node = match_case(MatchValue(create_ast_node(children[0])), create_expr_list(children[1]))
+
+        # look at index -1 for the correct
+        state_name, switch_name = switch_stack[-1]
+        condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
+        node = If(condition, create_stmt_list(children[1].get_children()), [])
+
 
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
