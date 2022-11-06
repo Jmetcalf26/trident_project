@@ -123,7 +123,10 @@ def create_ast_node(n, name_opt=Load()):
         state_name, switch_name = switch_stack[-1]
         condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
         node = If(condition, create_stmt_list(children[1].get_children()), [])
-
+    if nt == "DEFAULT_STMT":
+        print_node_info(n)
+        state_name, switch_name = switch_stack[-1]
+        node = Break()
 
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
