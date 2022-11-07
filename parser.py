@@ -50,6 +50,8 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
         elif tokens[0] == "_stdlib_inclusion":
             node = ImportFrom('pheaders.stdlib', [alias(name='*')], 0)
+        elif tokens[0] == "_string_inclusion":
+            node = ImportFrom('pheaders.string', [alias(name='*')], 0)
         else:
             return
 
@@ -91,7 +93,7 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "CHARACTER_LITERAL":
         print("creating a new Constant...")
         print_node_info(n)
-        node = Constant(eval(tokens[0]))
+        node = Call(func=Name(id='ord', ctx=Load()), args=[Constant(eval(tokens[0]))], keywords=[])
     if nt == "CONDITIONAL_OPERATOR":
         print_node_info(n)
         if len(children) > 2:
@@ -216,12 +218,15 @@ def create_ast_node(n, name_opt=Load()):
             print("constant array")
             array_size = n.type.element_count
             array_type = n.type.element_type
+            array = List([], Load())
+
             if get_type(children[0]) == "INT":
-                array = create_ast_node(children[1])
+                print("integer")
+                if len(children) == 2:
+                    array = create_ast_node(children[1])
             elif len(children) > 0:
                 array = create_ast_node(children[0])
-            else:
-                array = List([], Load())
+
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
             node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [array, Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
 

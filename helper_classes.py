@@ -5,8 +5,8 @@ class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         global memory_counter
         if isinstance(array, str):
-            array = list(array)
-            array.append('\x00')
+            array = list(map(ord, array))
+            array.append(0)
         self.array = array
         self.index = index
         self.size = size
@@ -42,9 +42,9 @@ class Pointer:
     def __str__(self):
         ret = ""
         for i in self.array:
-            if i == '\x00':
+            if i == 0:
                 return ret
-            ret += i
+            ret += chr(i)
         #return ret + '\x00'
         return ret
 
