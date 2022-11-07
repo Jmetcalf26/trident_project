@@ -4,6 +4,8 @@ from helper_functions import *
 class Pointer:
     def __init__(self, array, index, size):
         self.array = array
+        if isinstance(array, str):
+            self.array = [ord(c) for c in array] + [0]
         self.index = index
         self.size = size
     def deref(self):
@@ -11,7 +13,7 @@ class Pointer:
     def getsize(self):
         return self.size
     def __add__(self, a):
-        return Pointer(self.array, self.index + a)
+        return Pointer(self.array, self.index + a, self.size)
     def __get__(self, n):
         return self.array[self.index+n]
     def __getitem__(self, i):
@@ -29,7 +31,15 @@ class Pointer:
         else:
             super().__getattr__(name)
     def __str__(self):
-        return "index: " + str(self.index) + " size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.array])
+        if self.size == 1:
+            try:
+                null_byte = self.array.index(0)
+            except ValueError:
+                raise ValueError("No null byte in string") from None
+            return ''.join(chr(x) for x in self.array[:null_byte])
+        else:
+            raise NotImplementedError("need pointer alias for string conversion")
+        #return "index: " + str(self.index) + " size: " + str(self.size) + " data: " + ' '.join([str(i) for i in self.array])
 
 
 class Pointer_alias:
