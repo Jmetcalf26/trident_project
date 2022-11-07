@@ -7,7 +7,8 @@ from helper_functions import *
 from ast import *
 import sys
 
-
+switch_counter = 0
+switch_stack = []
 def create_stmt_list(node_list):
     return [force_stmt(create_ast_node(n)) for n in node_list]
 def create_expr_list(node_list):
@@ -20,7 +21,7 @@ def force_stmt(n):
         return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
-
+    global switch_counter, switch_stack
     # determine the type of node to create
     stars()
     nt = str(n.kind)[11:]
@@ -43,16 +44,40 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         extended_node_info(n)
         return
+
     if nt == "MACRO_DEFINITION":
         if tokens[0] == "_stdio_inclusion":
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
+        elif tokens[0] == "_stdlib_inclusion":
+            node = ImportFrom('pheaders.stdlib', [alias(name='*')], 0)
+        elif tokens[0] == "_string_inclusion":
+            node = ImportFrom('pheaders.string', [alias(name='*')], 0)
         else:
             return
+
+        
+    # THIS SHOULD PROBABLY BE ACTUALLY INITIALIZED AT SOME POINT YO!
+    if nt == "ENUM_DECL":
+        return
+    if nt == "TYPEDEF_DECL":
+        return
+    if nt == "STRUCT_DECL":
+        return
+    if nt == "TYPE_REF":
+        return
+    if nt == "BREAK_STMT":
+        node = Break()
+
 
     if nt == "STRING_LITERAL":
         print("creating a new String...")
         print_node_info(n)
-        node = Constant(eval(n.spelling))
+        text = Constant(eval(bytes(n.spelling, 'utf-8').decode()))
+        #print(bytes(ord(x) for x in n.spelling).decode())
+        a = bytes(map(ord, n.spelling))
+        text = Constant(eval(tokens[0]))
+        node = Call(Name('Pointer', Load()), [text, Constant(0), Constant(1)], [])
+        
 
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
@@ -68,7 +93,43 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "CHARACTER_LITERAL":
         print("creating a new Constant...")
         print_node_info(n)
-        node = Constant(eval(tokens[0]))
+        node = Call(func=Name(id='ord', ctx=Load()), args=[Constant(eval(tokens[0]))], keywords=[])
+    if nt == "CONDITIONAL_OPERATOR":
+        print_node_info(n)
+        if len(children) > 2:
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
+        else:
+            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
+
+    if nt == "SWITCH_STMT":
+        print_node_info(n)
+
+        node = Module([])
+        state_name = "__switch_state_status"+str(switch_counter)
+        switch_name = "__switch_var_value"+str(switch_counter) 
+        switch_stack.append((state_name, switch_name))
+        switch_counter += 1
+
+        state = Assign([Name(state_name, Store())], List([Constant(0)], Load()))
+        switch_value = Assign([Name(switch_name, Store())], List([create_ast_node(children[0])], Load()))
+        
+        node.body.append(state)
+        node.body.append(switch_value)
+        node.body.extend(create_stmt_list(children[1].get_children()))
+        switch_stack.pop()
+
+    if nt == "CASE_STMT":
+        print_node_info(n)
+
+        # look at index -1 for the correct
+        state_name, switch_name = switch_stack[-1]
+        condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
+        node = If(condition, create_stmt_list(children[1].get_children()), [])
+        
+    if nt == "DEFAULT_STMT":
+        print_node_info(n)
+        state_name, switch_name = switch_stack[-1]
+        node = Break()
 
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
@@ -157,12 +218,15 @@ def create_ast_node(n, name_opt=Load()):
             print("constant array")
             array_size = n.type.element_count
             array_type = n.type.element_type
+            array = List([], Load())
+
             if get_type(children[0]) == "INT":
-                array = create_ast_node(children[1])
+                print("integer")
+                if len(children) == 2:
+                    array = create_ast_node(children[1])
             elif len(children) > 0:
                 array = create_ast_node(children[0])
-            else:
-                array = List([], Load())
+
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
             node = Assign([Name(n.spelling, Store())], List([Call(Name('Pointer', Load()), [array, Constant(0), Constant(n.type.element_type.get_size())], [])], Load()))
 
@@ -289,6 +353,7 @@ if len(sys.argv) > 1:
             print("Usage: ./parser.py -i <filename>")
             sys.exit(1)
 try:
+    #tu = index.parse(filename, args=['-Iheaders'])
     #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
     tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
