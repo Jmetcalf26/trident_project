@@ -1,3 +1,59 @@
+import unicodedata
+
+def isalnum(ch):
+    return int(chr(ch[0]).isalnum())
+
+def isalpha(ch):
+    return int(chr(ch[0]).isalpha())
+
+def islower(ch):
+    return int(chr(ch[0]).islower())
+
+def isupper(ch):
+    return int(chr(ch[0]).isupper())
+
+def isdigit(ch):
+    return int(chr(ch[0]).isalpha())
+
+def isxdigit(ch):
+    c = chr(ch[0])
+    try:
+        int(c, 16)
+        return 1
+    except ValueError:
+        return 0
+
+def iscntrl(ch):
+    c = chr(ch[0])
+    return int(unicodedata.category(c) == 'C')
+
+def isgraph(ch):
+    c = chr(ch[0])
+    cat = unicodedata.category(c)
+    return int(cat[0] in 'LMNPS')
+
+def isspace(ch):
+    return int(chr(ch[0]).isspace())
+
+def isblank(ch):
+    c = chr(ch[0])
+    cat = unicodedata.category(c)
+    return int(cat[0] == 'Zs' or c == '\t')
+
+def isprint(ch):
+    return int(chr(ch[0]).isprintable())
+
+def ispunct(ch):
+    c = chr(ch[0])
+    cat = unicodedata.category(c)
+    return int(cat[0] == 'P')
+
+def tolower(ch):
+    return ord(chr(ch[0]).lower()[0])
+
+def toupper(ch):
+    return ord(chr(ch[0]).upper()[0])
+
 def strcpy(dest, src):
     i = 0
     while src[0][i] != 0:
