@@ -1,12 +1,14 @@
 #include <stdio.h>
-#define INT_MAX 4
+
+#include <string.h>
 int main(){
-	int a =1;
-	int * b = &a;
-	int c = INT_MAX - 2;
-	char * d = (char *) &c;
-	printf("%c\n", *d);
-	//int * d = &c;
-	int e = *d;
-	printf("%d %d %d\n", a, c, e);
+	char a[12];
+	scanf("%s", a);
+	printf("%s\n", a);
+	char b[12];
+	strcpy(b, a);
+	printf("%s", b);
+	return 0;
+
 }
+
