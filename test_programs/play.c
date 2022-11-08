@@ -62,7 +62,9 @@ void play(int seed){
     if (pscore <= 21) {
       printf("Hit or stand? [h/s] ");
       scanf(" %c", &cmd);
-      if (cmd == 'h') deal(player, deck, &deckpos);
+      if (cmd == 'h') 
+        deal(player, deck, &deckpos);
+      
     } else {
       printf("Player busts!\n");
       pbust =1;

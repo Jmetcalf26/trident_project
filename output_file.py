@@ -2,6 +2,7 @@ from helper_classes import *
 from pheaders.stdio import *
 from pheaders.stdlib import *
 from pheaders.string import *
+from pheaders.unistd import *
 
 
 def booga():
@@ -45,10 +46,7 @@ def play(seed):
             printf([Pointer('Hit or stand? [h/s] ', 0, 1)])
             scanf([Pointer(' %c', 0, 1)], [Pointer(cmd, 0, 1)])
             if cmd[0] == ord('h'):
-                deal
-                player[0]
-                deck[0]
-                Pointer(deckpos, 0, 4)
+                deal([player[0]], [deck[0]], [Pointer(deckpos, 0, 4)])
         elif True:
             printf([Pointer('Player busts!\n', 0, 1)])
             pbust[0] = 1
@@ -151,23 +149,23 @@ def printcard(cardindex, score):
     facevalue = [cardindex[0] % 100]
     __switch_state_status0 = [0]
     __switch_var_value0 = [facevalue[0]]
-    if (__switch_state_status0 == 1 or __switch_state_status0 == 0 and 
-        __switch_var_value0 == 11):
+    if __switch_state_status0[0] == 1 or __switch_state_status0[0
+        ] == 0 and __switch_var_value0[0] == 11:
         printf([Pointer(' J', 0, 1)])
         score[0].value += 10
         __switch_state_status0 = [2]
-    if (__switch_state_status0 == 1 or __switch_state_status0 == 0 and 
-        __switch_var_value0 == 12):
+    if __switch_state_status0[0] == 1 or __switch_state_status0[0
+        ] == 0 and __switch_var_value0[0] == 12:
         printf([Pointer(' Q', 0, 1)])
         score[0].value += 10
         __switch_state_status0 = [2]
-    if (__switch_state_status0 == 1 or __switch_state_status0 == 0 and 
-        __switch_var_value0 == 13):
+    if __switch_state_status0[0] == 1 or __switch_state_status0[0
+        ] == 0 and __switch_var_value0[0] == 13:
         printf([Pointer(' K', 0, 1)])
         score[0].value += 10
         __switch_state_status0 = [2]
-    if (__switch_state_status0 == 1 or __switch_state_status0 == 0 and 
-        __switch_var_value0 == 14):
+    if __switch_state_status0[0] == 1 or __switch_state_status0[0
+        ] == 0 and __switch_var_value0[0] == 14:
         printf([Pointer(' A', 0, 1)])
         if score[0].value + 11 > 21 or score[0].value == 2:
             score[0].value += 1
@@ -176,28 +174,30 @@ def printcard(cardindex, score):
         elif True:
             score[0].value += 11
         __switch_state_status0 = [2]
-        break
+    if __switch_state_status0[0] < 2:
+        printf([Pointer('%2d', 0, 1)], [facevalue[0]])
         score[0].value += facevalue[0]
         __switch_state_status0 = [2]
     __switch_state_status1 = [0]
     __switch_var_value1 = [suitnumber[0]]
-    if (__switch_state_status1 == 1 or __switch_state_status1 == 0 and 
-        __switch_var_value1 == 1):
+    if __switch_state_status1[0] == 1 or __switch_state_status1[0
+        ] == 0 and __switch_var_value1[0] == 1:
         printf([Pointer('♣ ', 0, 1)])
         __switch_state_status1 = [2]
-    if (__switch_state_status1 == 1 or __switch_state_status1 == 0 and 
-        __switch_var_value1 == 2):
+    if __switch_state_status1[0] == 1 or __switch_state_status1[0
+        ] == 0 and __switch_var_value1[0] == 2:
         printf([Pointer('♦ ', 0, 1)])
         __switch_state_status1 = [2]
-    if (__switch_state_status1 == 1 or __switch_state_status1 == 0 and 
-        __switch_var_value1 == 3):
+    if __switch_state_status1[0] == 1 or __switch_state_status1[0
+        ] == 0 and __switch_var_value1[0] == 3:
         printf([Pointer('♥ ', 0, 1)])
         __switch_state_status1 = [2]
-    if (__switch_state_status1 == 1 or __switch_state_status1 == 0 and 
-        __switch_var_value1 == 4):
+    if __switch_state_status1[0] == 1 or __switch_state_status1[0
+        ] == 0 and __switch_var_value1[0] == 4:
         printf([Pointer('♠ ', 0, 1)])
         __switch_state_status1 = [2]
-        break
+    if __switch_state_status1[0] < 2:
+        printf([Pointer('ERROR! ', 0, 1)])
         __switch_state_status1 = [2]
     return score[0].value
 

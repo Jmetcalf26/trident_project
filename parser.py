@@ -52,6 +52,8 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.stdlib', [alias(name='*')], 0)
         elif tokens[0] == "_string_inclusion":
             node = ImportFrom('pheaders.string', [alias(name='*')], 0)
+        elif tokens[0] == "_unistd_inclusion":
+            node = ImportFrom('pheaders.unistd', [alias(name='*')], 0)
         else:
             return
 
@@ -121,7 +123,7 @@ def create_ast_node(n, name_opt=Load()):
             print(i.kind)
         no = create_ast_node(cases[0]) 
         for i in range(1, len(cases)):
-            if cases[i].kind == CursorKind.CASE_STMT:
+            if cases[i].kind == CursorKind.CASE_STMT or cases[i].kind == CursorKind.DEFAULT_STMT:
                 node.body.append(no)
                 no = create_ast_node(cases[i])
             elif cases[i].kind == CursorKind.BREAK_STMT:
@@ -145,7 +147,7 @@ def create_ast_node(n, name_opt=Load()):
             chi = Assign([Name(state_name, Store())], List([Constant(2)], Load()))
         else:
             chi = force_stmt(create_ast_node(children[1]))
-        node = If(test=BoolOp(op=Or(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Name(switch_name, ctx=Load()), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
+        node = If(test=BoolOp(op=Or(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Subscript(Name(switch_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
         #if is_child(children[1].get_children(), "BREAK_STMT"):
             #print("THIS CASE HAS A BREAK STATEMENT!")
             #node.body.insert(Assign([Name(state_name, Store())], List([Constant(2)], Load())), 0)
@@ -153,7 +155,13 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "DEFAULT_STMT":
         print_node_info(n)
         state_name, switch_name = switch_stack[-1]
-        node = Break()
+        if children[0].kind == CursorKind.BREAK_STMT:
+            chi = Assign([Subscript(Name(state_name, ctx=Load()), Constant(0), Store())], List([Constant(2)], Load()))
+        else:
+            chi = force_stmt(create_ast_node(children[0]))
+
+        node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
+        node = If(test=Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Lt()], comparators=[Constant(value=2)]), body=[chi], orelse=[])
 
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR (If)...")
@@ -187,10 +195,14 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "IF_STMT":
         print("creating a new If...")
         print_node_info(n)
-        if len(children) > 2:
-            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
+        if children[1].kind == CursorKind.COMPOUND_STMT:
+            c = create_stmt_list(children[1].get_children())
         else:
-            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
+            c = [force_stmt(create_ast_node(children[1]))]
+        if len(children) > 2:
+            node = If(create_ast_node(children[0]), c, [create_ast_node(children[2])])
+        else:
+            node = If(create_ast_node(children[0]), c, [])
 
     if nt == "FUNCTION_DECL":
         print_node_info(n)
@@ -282,12 +294,11 @@ def create_ast_node(n, name_opt=Load()):
             node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
 
     if nt == "CALL_EXPR":
+        print("creating a new Function Call...")
+
         print_node_info(n)
-        extended_node_info(n)
         node = Call([], [], [])
-        #node.func = Name(children[0].spelling, Load())
         node.func = create_ast_node(children[0])
-        # List([create_ast_node(children[0])], Load())
         node.args = [List([c], Load()) for c in create_expr_list(children[1:])]
 
     if nt == "COMPOUND_ASSIGNMENT_OPERATOR":
