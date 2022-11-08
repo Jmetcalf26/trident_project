@@ -1,4 +1,6 @@
 from ast import *
+from enum import Enum
+from clang.cindex import TypeKind
 
 def bin(a):
     print("{0:b}".format(a))
@@ -70,6 +72,44 @@ def print_node_info(n):
 def get_type(node):
     return str(node.type.get_canonical().kind)[9:]
 
+TypeCat = Enum('TypeCat', 'INTEGRAL FLOATING POINTER UNKNOWN')
+
+def type_category(node):
+    return {
+        TypeKind.BLOCKPOINTER: TypeCat.POINTER,
+        TypeKind.CONSTANTARRAY: TypeCat.POINTER,
+        TypeKind.DEPENDENTSIZEDARRAY: TypeCat.POINTER,
+        TypeKind.INCOMPLETEARRAY: TypeCat.POINTER,
+        TypeKind.MEMBERPOINTER: TypeCat.POINTER,
+        TypeKind.NULLPTR: TypeCat.POINTER,
+        TypeKind.POINTER: TypeCat.POINTER,
+        TypeKind.VARIABLEARRAY: TypeCat.POINTER,
+
+        TypeKind.BOOL: TypeCat.INTEGRAL,
+        TypeKind.CHAR16: TypeCat.INTEGRAL,
+        TypeKind.CHAR32: TypeCat.INTEGRAL,
+        TypeKind.ENUM: TypeCat.INTEGRAL,
+        TypeKind.INT: TypeCat.INTEGRAL,
+        TypeKind.INT128: TypeCat.INTEGRAL,
+        TypeKind.LONG: TypeCat.INTEGRAL,
+        TypeKind.LONGLONG: TypeCat.INTEGRAL,
+        TypeKind.SCHAR: TypeCat.INTEGRAL,
+        TypeKind.SHORT: TypeCat.INTEGRAL,
+        TypeKind.UCHAR: TypeCat.INTEGRAL,
+        TypeKind.UINT: TypeCat.INTEGRAL,
+        TypeKind.UINT128: TypeCat.INTEGRAL,
+        TypeKind.ULONG: TypeCat.INTEGRAL,
+        TypeKind.ULONGLONG: TypeCat.INTEGRAL,
+        TypeKind.USHORT: TypeCat.INTEGRAL,
+        TypeKind.WCHAR: TypeCat.INTEGRAL,
+
+        TypeKind.COMPLEX: TypeCat.FLOATING,
+        TypeKind.DOUBLE: TypeCat.FLOATING,
+        TypeKind.FLOAT: TypeCat.FLOATING,
+        TypeKind.FLOAT128: TypeCat.FLOATING,
+        TypeKind.LONGDOUBLE: TypeCat.FLOATING,
+    }.get(node.kind, TypeCat.UNKNOWN)
+
 def translate_u_operator(operator):
     op = None 
     if operator == '!':
@@ -82,7 +122,7 @@ def translate_u_operator(operator):
         op = Invert()
     return op
 
-def translate_operator(operator):
+def translate_operator(operator, lhs_cat=TypeCat.UNKNOWN, rhs_cat=TypeCat.UNKNOWN):
     op = None 
     # Relational Operators
     if operator == '==':
@@ -105,8 +145,12 @@ def translate_operator(operator):
     elif operator == '*':
         op = Mult()
     elif operator == '/':
-        op = Div()
+        if lhs_cat is TypeCat.FLOATING or rhs_cat is TypeCat.FLOATING:
+            op = Div()
+        else:
+            op = FloorDiv()
     # THIS WILL NEVER BE REACHED BECAUSE THERE IS NONE OF THIS IN C, ADD CHECK TO SEE IF BOTH SIDES ARE INTS TO USE THIS!
+    # (done - see above)
     elif operator == '//':
         op = FloorDiv()
     elif operator == '%':
