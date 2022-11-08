@@ -3,6 +3,13 @@ from ast import *
 def bin(a):
     print("{0:b}".format(a))
 
+def is_child(children, node_type):
+    for c in children:
+        if get_type(c) == node_type:
+            return True
+    return False
+            
+
 def add_overflow_check(n, node):
     stars()
     print("INSIDE INT ERROR CHECK")

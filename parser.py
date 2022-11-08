@@ -123,8 +123,12 @@ def create_ast_node(n, name_opt=Load()):
 
         # look at index -1 for the correct
         state_name, switch_name = switch_stack[-1]
-        condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
-        node = If(condition, create_stmt_list(children[1].get_children()), [])
+        #condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
+        #node = If(condition, create_stmt_list(children[1].get_children()), [])
+        node = If(test=BoolOp(op=Or(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Name(switch_name, ctx=Load()), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[create_stmt_list(children[1].get_children())], orelse=[])
+        if is_child(children[1].get_children(), "BREAK_STMT"):
+                    print("THIS CASE HAS A BREAK STATEMENT!")
+                    node.body.insert(Assign([Name(state_name, Store())], List([Constant(2)], Load())), 0)
         
     if nt == "DEFAULT_STMT":
         print_node_info(n)
