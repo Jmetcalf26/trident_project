@@ -6,17 +6,41 @@ stdout = [sys.stdout.buffer]
 stdin = [sys.stdin.detach()]
 stderr = [sys.stderr.buffer]
 
+def _fmode(mode):
+    modes = str(mode[0])
+    if 'b' in modes:
+        return modes
+    else:
+        return modes + 'b'
+
 def fopen(fname, mode):
-    mod = mode[0]
-    if 'b' not in mod:
-        mod += 'b'
-    return open(fname, mod)
+    return open(str(fname[0]), _fmode(mode))
+
+def freopen(fname, mode, stream):
+    stream[0].close()
+    fname = str(fname[0])
+    if not fname:
+        fname = stream.name
+    return open(fname, _fmode(mode))
 
 def fclose(stream):
     stream[0].close()
 
 def fflush(stream):
     stream[0].flush()
+
+def fread(buf, size, count, stream):
+    need = size[0] * count[0]
+    got = 0
+    while need > 0:
+        chunk = stream[0].read(need)
+        if not chunk:
+            break
+        for (i,c) in enumerate(chunk):
+            buf[got] = c
+            got += 1
+            need -= 1
+    return got // size[0]
 
 def puts(string):
     stdout[0].write(str(string[0]).encode())

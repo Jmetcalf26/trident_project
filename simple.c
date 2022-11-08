@@ -1,9 +1,14 @@
-#define a 2
 #include <stdio.h>
+
+#include <string.h>
 int main(){
-	int x = a;
-	char * s = "☃\n	☹☙☣";
-	puts(s);
+	char a[12];
+	scanf("%s", a);
+	printf("%s\n", a);
+	char b[12];
+	strcpy(b, a);
+	printf("%s", b);
 	return 0;
+
 }
 

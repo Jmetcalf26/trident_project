@@ -5,8 +5,8 @@ class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         global memory_counter
         if isinstance(array, str):
-            array = list(array)
-            array.append('\x00')
+            array = list(map(ord, array))
+            array.append(0)
         self.array = array
         self.index = index
         self.size = size
@@ -22,7 +22,7 @@ class Pointer:
     def getsize(self):
         return self.size
     def __add__(self, a):
-        return Pointer(self.array, self.index + a, self.memory_loc)
+        return Pointer(self.array, self.index + a, self.size, self.memory_loc)
     def __get__(self, n):
         return self.array[self.index+n]
     def __getitem__(self, i):
@@ -40,13 +40,14 @@ class Pointer:
         else:
             super().__getattr__(name)
     def __str__(self):
-        ret = ""
-        for i in self.array:
-            if i == '\x00':
-                return ret
-            ret += i
-        #return ret + '\x00'
-        return ret
+        if self.size == 1:
+            try:
+                null_byte = self.array.index(0)
+            except ValueError:
+                raise ValueError("No null byte in string") from None
+            return ''.join(chr(x) for x in self.array[:null_byte])
+        else:
+            raise NotImplementedError("need pointer alias for string conversion")
 
     def __int__(self):
         return self.memory_loc + self.index * self.size
