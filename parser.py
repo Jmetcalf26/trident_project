@@ -115,7 +115,22 @@ def create_ast_node(n, name_opt=Load()):
         
         node.body.append(state)
         node.body.append(switch_value)
-        node.body.extend(create_stmt_list(children[1].get_children()))
+        print("ASDFASDF")
+        cases = list(children[1].get_children())
+        for i in cases:
+            print(i.kind)
+        no = create_ast_node(cases[0]) 
+        for i in range(1, len(cases)):
+            if cases[i].kind == CursorKind.CASE_STMT:
+                node.body.append(no)
+                no = create_ast_node(cases[i])
+            elif cases[i].kind == CursorKind.BREAK_STMT:
+                no.body.append(Assign([Name(state_name, Store())], List([Constant(2)], Load())))
+                i+=1
+            else:
+                no.body.append(force_stmt(create_ast_node(cases[i])))
+        node.body.append(no)
+
         switch_stack.pop()
 
     if nt == "CASE_STMT":
@@ -125,10 +140,15 @@ def create_ast_node(n, name_opt=Load()):
         state_name, switch_name = switch_stack[-1]
         #condition= BoolOp(And(), [Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])]), Compare(Name(switch_name), [Eq()], [create_ast_node(children[0])])])
         #node = If(condition, create_stmt_list(children[1].get_children()), [])
-        node = If(test=BoolOp(op=Or(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Name(switch_name, ctx=Load()), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[create_stmt_list(children[1].get_children())], orelse=[])
-        if is_child(children[1].get_children(), "BREAK_STMT"):
-                    print("THIS CASE HAS A BREAK STATEMENT!")
-                    node.body.insert(Assign([Name(state_name, Store())], List([Constant(2)], Load())), 0)
+        print(children[1])
+        if children[1].kind == CursorKind.BREAK_STMT:
+            chi = Assign([Name(state_name, Store())], List([Constant(2)], Load()))
+        else:
+            chi = force_stmt(create_ast_node(children[1]))
+        node = If(test=BoolOp(op=Or(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Name(switch_name, ctx=Load()), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
+        #if is_child(children[1].get_children(), "BREAK_STMT"):
+            #print("THIS CASE HAS A BREAK STATEMENT!")
+            #node.body.insert(Assign([Name(state_name, Store())], List([Constant(2)], Load())), 0)
         
     if nt == "DEFAULT_STMT":
         print_node_info(n)
@@ -184,8 +204,12 @@ def create_ast_node(n, name_opt=Load()):
         print("children:")
         for i in n.get_children():
             print(str(i.kind)[11:], i.spelling)
-            
-        node = FunctionDef(tokens[1], body=[], decorator_list=[])
+        for i in range(len(tokens)):
+            if tokens[i] == "(":
+                name_token = tokens[i-1]
+                break
+        print("BADABING:", name_token)
+        node = FunctionDef(name_token, body=[], decorator_list=[])
         # get the number of arguments
         num_args = len(list(n.get_arguments()))
 
@@ -267,8 +291,13 @@ def create_ast_node(n, name_opt=Load()):
         node.args = [List([c], Load()) for c in create_expr_list(children[1:])]
 
     if nt == "COMPOUND_ASSIGNMENT_OPERATOR":
+        print_node_info(n)
         print("creating a new AugAssign...")
-        operator = tokens[1][0]
+
+        for i in tokens:
+            if '=' in i:
+                operator = i[0]
+        print("HEY IM PRINTING HERE", operator)
         node = AugAssign(create_ast_node(children[0], name_opt=Store()), translate_operator(operator), create_ast_node(children[1]))
 
     if nt == "PAREN_EXPR":

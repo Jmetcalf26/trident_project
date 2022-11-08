@@ -2,13 +2,16 @@
 
 #include <string.h>
 int main(){
-	char a[12];
-	scanf("%s", a);
-	printf("%s\n", a);
-	char b[12];
-	strcpy(b, a);
-	printf("%s", b);
-	return 0;
+	int a[5] = {1, 2, 3, 4, 5};
+	int b = 3;
+	int *c = &b;
+	int i =0;
+	while(a[i] != 4){
+		i++;
+	}
+	a[i] = a[*c];
+
+	*c -= 1;
 
 }
 

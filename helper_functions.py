@@ -5,7 +5,7 @@ def bin(a):
 
 def is_child(children, node_type):
     for c in children:
-        if get_type(c) == node_type:
+        if str(c.kind)[11:] == node_type:
             return True
     return False
             

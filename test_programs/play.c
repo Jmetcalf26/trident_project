@@ -239,3 +239,4 @@ int printcard(int cardindex, int* score){
   }
   return *score;
 }
+
