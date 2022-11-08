@@ -1,3 +1,7 @@
+*
+!*.*
+!*/
 .nfs*
 __pycache__
 .*.swp
+a.out
