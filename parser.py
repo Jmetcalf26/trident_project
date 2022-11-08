@@ -7,6 +7,11 @@ from helper_functions import *
 from ast import *
 import sys
 
+def debug(x):
+    global y
+    y = x
+    raise RuntimeError('debug')
+
 switch_counter = 0
 switch_stack = []
 def create_stmt_list(node_list):
@@ -364,7 +369,8 @@ def create_ast_node(n, name_opt=Load()):
             print(children[0].type.get_size(), children[1].type.get_size())
             # overflow = check_for_int_error(operator, children)
             # print(overflow)
-            node = BinOp(create_ast_node(children[0]), translate_operator(operator), create_ast_node(children[1]))
+            ltc, rtc = map(type_category,children)
+            node = BinOp(create_ast_node(children[0]), translate_operator(operator,ltc,rtc), create_ast_node(children[1]))
 
     if nt == "CSTYLE_CAST_EXPR":
         print("creating a new cast...")
