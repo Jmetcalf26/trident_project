@@ -70,3 +70,31 @@ for i in range(4):
 for i in range(2):
         print(i, hex(a[i]))
 
+a = Pointer([0x41424344, 0x45464748], 0, 4)
+b = Pointer_alias(a, 1)
+print("orig: 4. alias: 1.")
+for i in range(8):
+        print(i, hex(b[i]))
+
+print("b[0] = 0x49")
+b[0] = 0x49
+print("orig: 4. alias: 1.")
+for i in range(8):
+        print(i, hex(b[i]))
+for i in range(2):
+        print(i, hex(a[i]))
+
+print("b[1] = 0x4a")
+b[1] = 0x4a
+print("orig: 4. alias: 1.")
+for i in range(8):
+        print(i, hex(b[i]))
+for i in range(2):
+        print(i, hex(a[i]))
+print("b[2] = 0x4b")
+b[2] = 0x4b
+for i in range(8):
+        print(i, hex(b[i]))
+for i in range(2):
+        print(i, hex(a[i]))
+

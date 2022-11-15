@@ -90,7 +90,7 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new Constant...")
         print_node_info(n)
         # node = Call(Name('Data', Load()), [Constant(int(tokens[0])), Constant(n.type.get_size())], [])
-        node = Constant(int(tokens[0]))
+        node = Constant(literal_eval(tokens[0]))
 
     if nt == "FLOATING_LITERAL":
         print("creating a new Constant...")
@@ -185,18 +185,26 @@ def create_ast_node(n, name_opt=Load()):
         node.body = create_stmt_list(children)
 
     if nt == "FOR_STMT":
+
         print("creating a new For (actually a While)...")
+        print_node_info(n)
         decl_node = create_ast_node(children[0])
         comp_node = create_ast_node(children[1])
         iter_node = create_ast_node(children[2])
-        bod = create_stmt_list(children[3].get_children())
+        if children[3].kind == CursorKind.COMPOUND_STMT:
+            bod = create_stmt_list(children[3].get_children())
+        else:
+            bod = [force_stmt(create_ast_node(children[3]))]
         bod.append(iter_node)
 
-        node = If(Constant(value=True, kind=None), [decl_node, While(comp_node, bod, [])], [])
+        node = Module([decl_node, While(comp_node, bod, [])], [])
 
     if nt == "WHILE_STMT":
         print("creating a new While...")
-        node = While(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
+        if children[1].kind == CursorKind.COMPOUND_STMT:
+            node = While(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
+        else:
+            node = While(create_ast_node(children[0]), [force_stmt(create_ast_node(children[1]))], [])
 
     if nt == "IF_STMT":
         print("creating a new If...")
@@ -306,6 +314,7 @@ def create_ast_node(n, name_opt=Load()):
         node = Call([], [], [])
         node.func = create_ast_node(children[0])
         node.args = [List([c], Load()) for c in create_expr_list(children[1:])]
+        #node.args = create_expr_list(children[1:])
 
     if nt == "COMPOUND_ASSIGNMENT_OPERATOR":
         print_node_info(n)
@@ -344,6 +353,7 @@ def create_ast_node(n, name_opt=Load()):
             node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0), Constant(size)], [])
         elif operator == '*':
             node = Attribute(create_ast_node(children[0]), 'value', Load())
+            node = Subscript(create_ast_node(children[0]), Attribute(create_ast_node(children[0]), 'index', Load()))
             #node = Subscript(create_ast_node(children[0]), Attribute(create_ast_node(children[0]), 'index', Load()), Store())
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))

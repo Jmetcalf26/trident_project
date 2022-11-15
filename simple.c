@@ -1,12 +1,10 @@
-
+#include <stdio.h>
+#include <stdlib.h>
 int main(){
-	int a = 1;
-	int b = 2;
-	if(b > a){
-		return 1;
-	}
-	else{
-		return 0;
-	}
+	char * a = malloc(4);
+	a[2] = 0x41;
+	for(int i =0; i < 4; i++)
+		printf("%d\n", a[i]);
+	free(a);
 }
 
