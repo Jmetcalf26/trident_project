@@ -101,12 +101,13 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new Constant...")
         print_node_info(n)
         node = Call(func=Name(id='ord', ctx=Load()), args=[Constant(eval(tokens[0]))], keywords=[])
+        
     if nt == "CONDITIONAL_OPERATOR":
         print_node_info(n)
         if len(children) > 2:
-            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [create_ast_node(children[2])])
+            node = If(create_ast_node(children[0]), [force_stmt(create_ast_node(children[1]))], [force_stmt(create_ast_node(children[2]))])
         else:
-            node = If(create_ast_node(children[0]), create_stmt_list(children[1].get_children()), [])
+            node = If(create_ast_node(children[0]), [force_stmt(create_ast_node(children[1]))], [])
 
     if nt == "SWITCH_STMT":
         print_node_info(n)
