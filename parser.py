@@ -74,6 +74,8 @@ def create_ast_node(n, name_opt=Load()):
         return
     if nt == "BREAK_STMT":
         node = Break()
+    if nt == "CONTINUE_STMT":
+        node = Continue()
 
 
     if nt == "STRING_LITERAL":
@@ -441,11 +443,12 @@ root = tu.cursor
 root_ast = Module([],[])
 childs = list(root.get_children())
 
-root_ast.body.append(add_helper_classes())
+root_ast.body.append(ImportFrom(module='helper_classes', names=[alias(name='*')], level=0))
 root_ast.body.extend(create_stmt_list(childs))
+print(root_ast.body)
 root_ast.body.append(add_main_check())
 
-
+#root_ast.body = root_ast.body[362:]
 
 # stars()
 # print("IDEAL PYTHON AST:")
@@ -453,6 +456,12 @@ root_ast.body.append(add_main_check())
 # stars()
 stars()
 print("WHAT I GOT:")
+for i in range(len(root_ast.body)):
+    try:
+        if root_ast.body[i].name == 'main':
+            print("HEY", i)
+    except:
+        pass
 print(dump(root_ast, indent=4))
 stars()
 
