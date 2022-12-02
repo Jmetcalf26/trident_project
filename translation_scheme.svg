@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="34.268002in"
+   height="19.693001in"
+   viewBox="0 0 870.40724 500.20221"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e, 2022-07-14)"
+   sodipodi:docname="translation_scheme.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#cccccc"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="1"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.5"
+     inkscape:cx="1408"
+     inkscape:cy="1152"
+     inkscape:window-width="2560"
+     inkscape:window-height="1357"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <marker
+       style="overflow:visible"
+       id="TriangleStart"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleStart-6"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135-0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleStart-6-5"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135-0-5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleStart-0"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135-03" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.81706"
+       id="rect111"
+       width="105.78656"
+       height="169.26201"
+       x="563.88208"
+       y="243.60553"
+       inkscape:export-filename="Translation_Scheme.png"
+       inkscape:export-xdpi="96.04689"
+       inkscape:export-ydpi="96.04689" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.81706"
+       id="rect111-2"
+       width="105.78656"
+       height="169.26201"
+       x="113.09106"
+       y="243.60553" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.59991"
+       id="rect111-2-2"
+       width="53.279186"
+       height="118.81336"
+       x="302.40198"
+       y="-449.47253"
+       transform="matrix(0.00399588,0.99999202,-0.99999788,0.00205708,0,0)" />
+    <path
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.78162;stroke-dasharray:none;marker-end:url(#TriangleStart-6)"
+       d="M 113.12824,327.27358 C 77.215271,296.25382 77.215271,296.25382 77.215271,296.25382"
+       id="path2927-5" />
+    <g
+       id="g3102"
+       transform="matrix(3.1284025,0,0,3.1284025,-24.628289,-204.69052)">
+      <rect
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:0.511413;stroke-dasharray:none"
+         id="rect3045"
+         width="19.687716"
+         height="17.912462"
+         x="10.450172"
+         y="151.17834" />
+      <rect
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:0.511413;stroke-dasharray:none"
+         id="rect3045-9"
+         width="19.687716"
+         height="17.912462"
+         x="10.450172"
+         y="172.91194" />
+    </g>
+    <g
+       id="g3098"
+       transform="matrix(3.1284025,0,0,3.1284025,179.54997,-206.4831)">
+      <rect
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:0.511413;stroke-dasharray:none"
+         id="rect3045-95"
+         width="19.687716"
+         height="17.912462"
+         x="171.54077"
+         y="151.21021" />
+      <rect
+         style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:0.511413;stroke-dasharray:none"
+         id="rect3045-9-6"
+         width="19.687716"
+         height="17.912462"
+         x="171.54077"
+         y="172.9438" />
+    </g>
+    <path
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.78162;stroke-dasharray:none;marker-end:url(#TriangleStart-6)"
+       d="M 113.45212,327.18943 C 77.539152,358.2092 77.539152,358.2092 77.539152,358.2092"
+       id="path3266" />
+    <path
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.78162;stroke-dasharray:none;marker-end:url(#TriangleStart-6-5)"
+       d="m 670.44708,327.85475 c 35.91297,-31.0198 35.91297,-31.0198 35.91297,-31.0198"
+       id="path2927-5-3" />
+    <path
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.78162;stroke-dasharray:none;marker-end:url(#TriangleStart-6-5)"
+       d="m 670.1232,327.77056 c 35.91296,31.01977 35.91296,31.01977 35.91296,31.01977"
+       id="path3266-4" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.553;stroke-dasharray:none"
+       x="310.75497"
+       y="191.46916"
+       id="text3593"><tspan
+         sodipodi:role="line"
+         id="tspan3591"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.553;stroke-dasharray:none"
+         x="310.75497"
+         y="191.46916">Manual Translation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.772819;stroke-dasharray:none"
+       x="391.10974"
+       y="289.85175"
+       id="text3593-6"
+       inkscape:export-filename="Translation_Scheme.png"
+       inkscape:export-xdpi="96.04689"
+       inkscape:export-ydpi="96.04689"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.9333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.772819"
+         x="391.10974"
+         y="289.85175"
+         id="tspan5852">Automatic Translation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.08664;stroke-dasharray:none"
+       x="165.8262"
+       y="319.65067"
+       id="text3746"><tspan
+         sodipodi:role="line"
+         id="tspan3744"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="165.8262"
+         y="319.65067">Input C </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="165.8262"
+         y="349.63678"
+         id="tspan5905">Program</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.08664;stroke-dasharray:none"
+       x="616.61725"
+       y="304.65759"
+       id="text3746-4"><tspan
+         sodipodi:role="line"
+         id="tspan3744-6"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="616.61725"
+         y="304.65759">Output</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="616.61725"
+         y="334.64371"
+         id="tspan11035">Python </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.9889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="616.61725"
+         y="364.62985"
+         id="tspan5905-9">Program</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.08664;stroke-dasharray:none"
+       x="393.04175"
+       y="323.8027"
+       id="text3777"><tspan
+         sodipodi:role="line"
+         id="tspan3775"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.75555556px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="393.04175"
+         y="323.8027">C-&gt;Python </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.75555556px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:2.08664"
+         x="393.04175"
+         y="339.6777"
+         id="tspan10997">Compiler</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.08664;stroke-dasharray:none"
+       x="10.036559"
+       y="299.42929"
+       id="text3781"><tspan
+         sodipodi:role="line"
+         id="tspan3779"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:2.08664"
+         x="10.036559"
+         y="299.42929">C Library</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.08664;stroke-dasharray:none"
+       x="10.036559"
+       y="366.89154"
+       id="text3781-6"><tspan
+         sodipodi:role="line"
+         id="tspan3779-6"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:2.08664"
+         x="10.036559"
+         y="366.89154">C Library</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.54099;stroke-dasharray:none"
+       x="720.60706"
+       y="290.1431"
+       id="text3812"
+       transform="scale(1.0016552,0.99834754)"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.54099"
+         x="720.60706"
+         y="290.1431"
+         id="tspan11123">Python</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.54099"
+         x="720.60706"
+         y="307.78198"
+         id="tspan11127">Library</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.54099;stroke-dasharray:none"
+       x="720.60706"
+       y="358.24707"
+       id="text3812-6"
+       transform="scale(1.0016552,0.99834754)"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.54099"
+         x="720.60706"
+         y="358.24707"
+         id="tspan11129">Python</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.1111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.54099"
+         x="720.60706"
+         y="375.88596"
+         id="tspan11133">Library</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:none;stroke-width:2.553;stroke-dasharray:none"
+       id="rect5826"
+       width="129.95288"
+       height="14.899698"
+       x="325.4801"
+       y="162.31621" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.553;stroke-dasharray:none;marker-end:url(#TriangleStart)"
+       d="m 230.60282,328.23653 c 80.57831,0 80.57831,0 80.57831,0"
+       id="path10811" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.553;stroke-dasharray:none;marker-end:url(#TriangleStart-0)"
+       d="m 462.51267,328.23653 c 80.57831,0 80.57831,0 80.57831,0"
+       id="path10811-2" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.553;stroke-dasharray:none;marker-end:url(#TriangleStart-6-5)"
+       d="m 37.089159,260.0848 c 0,0 313.455711,-139.88335 713.600921,-1.59748"
+       id="path11065" />
+  </g>
+</svg>
