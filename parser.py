@@ -348,6 +348,7 @@ def create_ast_node(n, name_opt=Load()):
         print("get_num_template_arguments():", n.get_num_template_arguments())
         operator = tokens[0]
         print("operator:", operator)
+        # LOOK AT THIS, THE WAY THAT THE TOKEN IS BEING REFERENCED BREAKS FOR ARRAYS
         if operator == '&':
             size = n.type.get_pointee().get_size()
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:

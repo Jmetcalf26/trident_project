@@ -71,3 +71,9 @@ def strcmp(comp1, comp2):
         return -1
     else:
         return 1
+
+def strlen(s):
+    i = 0
+    while s[0][i] != 0:
+        i+=1
+    return i
