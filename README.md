@@ -17,13 +17,13 @@ To import c ast (as used in parser.py):
 	
 To run main parser program with default input file of simple.c and relaxed type constraints:
 
-	./parser.py
+	./main.py
 	
 To run main parser program with strict typing:
 
-	./parser.py -s
+	./main.py -s
 	
 To run main parser program with custom input program:
 
-	./parser.py -i <input-filename>
+	./main.py -i <input-filename>
 	
