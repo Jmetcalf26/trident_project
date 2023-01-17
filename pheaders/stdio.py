@@ -1,6 +1,6 @@
 import sys
 import re
-
+from helper_classes import Deref
 EOF = [-1]
 stdout = [sys.stdout.buffer]
 stdin = [sys.stdin.detach()]
@@ -51,7 +51,17 @@ def printf(fmt, *args):
     fprintf(stdout, fmt, *args)
 
 def fprintf(stream, fmt, *args):
-    output = str(fmt[0]) % tuple(a[0] for a in args)
+    formatted_args = []
+    for a in args:
+        if isinstance(a[0], Deref):
+            formatted_args.append(a[0].get_value())
+        else:
+            formatted_args.append(a[0])
+
+    formatted_args = tuple(formatted_args)
+    output = str(fmt[0]) % formatted_args
+
+    #output = str(fmt[0]) % tuple(a[0] for a in args)
     stream[0].write(output.encode())
     stream[0].flush()
 

@@ -1,6 +1,16 @@
 from sys import *
 from helper_functions import *
 memory_counter = 16
+class Deref:
+    def __init__(self, pointer, index):
+        self.index = index
+        self.pointer = pointer
+        self.new_pointer = Pointer(pointer.get_array(), index, pointer.get_size())
+    def get_value(self):
+        return self.pointer.array[self.index]
+    def get_pointer(self):
+        return self.new_pointer
+
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         global memory_counter
@@ -19,8 +29,12 @@ class Pointer:
 
     def deref(self):
         return self.array[self.index]
-    def getsize(self):
+    def get_size(self):
         return self.size
+    def get_array(self):
+        return self.array
+    def get_value(self):
+        return self.array[self.index]
     def __add__(self, a):
         return Pointer(self.array, self.index + a, self.size, self.memory_loc)
     def __get__(self, n):
@@ -47,6 +61,7 @@ class Pointer:
                 raise ValueError("No null byte in string") from None
             return ''.join(chr(x) for x in self.array[:null_byte])
         else:
+            
             raise NotImplementedError("need pointer alias for string conversion")
 
     def __int__(self):

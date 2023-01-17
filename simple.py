@@ -1,6 +1,9 @@
 from Pointer import *
-def main():
-    return 0
+class Test:
+    def __init(a):
+        self.a =a
+    def o(self):
+        print(self.a)
 
-if __name__ == "__main__":
-     main()
+b = Test(1)
+b.o()
