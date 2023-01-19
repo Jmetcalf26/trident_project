@@ -3,13 +3,11 @@ from helper_functions import *
 memory_counter = 16
 class Deref:
     def __init__(self, pointer, index):
-        self.index = index
-        self.pointer = pointer
-        self.new_pointer = Pointer(pointer.get_array(), index, pointer.get_size())
+        self.pointer = pointer + index
     def get_value(self):
-        return self.pointer.array[self.index]
+        return self.pointer.get_value()
     def get_pointer(self):
-        return self.new_pointer
+        return self.pointer
 
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
@@ -27,8 +25,6 @@ class Pointer:
         else:
             self.memory_loc = memory_loc
 
-    def deref(self):
-        return self.array[self.index]
     def get_size(self):
         return self.size
     def get_array(self):

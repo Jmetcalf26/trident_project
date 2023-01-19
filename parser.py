@@ -41,17 +41,34 @@ def create_ast_node(n, name_opt=Load()):
     # *************************************** 
 
     if nt == "ENUM_DECL":
+        print_node_info(n)
+        #node = Module([])
+        #enum_value = 0
+        #for c in children: 
+        #    if len(list(c.get_children())) < 1:
+        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(enum_value)))
+        #    else:
+        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(create_ast_node(list(c.get_children())[0]))))
+        #        print("child tokens:", list(c.get_tokens()))
+        #        #enum_value = int(list(c.get_tokens())[2])+1
+        #node = Dict([Name(c.get_tokens().next()) for c in children], []) 
         return
+
+    if nt == "ENUM_CONSTANT_DECL":
+        print_node_info(n)
+        node = Constant(literal_eval(tokens[0]))
+
     if nt == "TYPEDEF_DECL":
+        print_node_info(n)
         return
+
     if nt == "STRUCT_DECL":
+        print_node_info(n)
         return
+    
     if nt == "TYPE_REF":
+        print_node_info(n)
         return
-    if nt == "BREAK_STMT":
-        node = Break()
-    if nt == "CONTINUE_STMT":
-        node = Continue()
 
     # *************************************** 
     # *************************************** 
@@ -280,8 +297,8 @@ def create_ast_node(n, name_opt=Load()):
             #    sys.exit(1)
         elif operator == '*':
             node = Call(Attribute(create_ast_node(children[0]), 'get_value', Load()), [], [])
-            #if list(children[0].get_children())[0].kind == CursorKind.ARRAY_SUBSCRIPT_EXPR:
-            #    node = Call(Attribute(create_ast_node(children[0]), 'get_value', Load()), [], [])
+            if list(children[0].get_children())[0].kind == CursorKind.ARRAY_SUBSCRIPT_EXPR:
+                node = Call(Attribute(Call(Attribute(create_ast_node(children[0]), 'get_value', Load()), [], []), 'get_value', Load()), [], [])
             #elif list(children[0].get_children())[0].kind == CursorKind.DECL_REF_EXPR:
             #    node = Subscript(create_ast_node(children[0]), Attribute(create_ast_node(children[0]), 'index', Load()))
             #else:
@@ -297,7 +314,7 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "BINARY_OPERATOR":
         print("creating a new binary op...")
-
+        print_node_info(n)
         operator = tokens[len(list(children[0].get_tokens()))]
         print("operator:", operator)
         if operator in ['||', '&&']:
@@ -432,6 +449,12 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new Return...")
         node = Return()
         node.value = create_ast_node(children[0])
+
+    if nt == "BREAK_STMT":
+        node = Break()
+
+    if nt == "CONTINUE_STMT":
+        node = Continue()
     # ************************************** 
     # ************************************** 
     # ************************************** 
