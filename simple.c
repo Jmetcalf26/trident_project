@@ -7,7 +7,7 @@ enum year{Jan, Feb, Mar, Apr, May, Jun, Jul,
 enum State {Working = 1, Failed = 0, Freezed = 0};
 int main()
 {
-int i;
+int i = Jan;
 for (i=Jan; i<=Dec; i++)	
 	printf("%d ", i);
 	

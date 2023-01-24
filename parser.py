@@ -25,7 +25,7 @@ def force_stmt(n):
     else:
         return Expr(n)
 
-def create_ast_node(n, name_opt=Load(), unexposed=False):
+def create_ast_node(n, name_opt=Load(), rvalue=False):
     global switch_counter, switch_stack, STRICT_TYPING
     # determine the type of node to create
     stars()
@@ -42,6 +42,14 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
 
     if nt == "ENUM_DECL":
         print_node_info(n)
+
+        #node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
+        keys = [c.spelling for c in children]
+        values = [c.enum_value for c in children]
+        node = Assign([Name(n.spelling)], Dict(keys, values))
+        
+        #node = Assign([Name(n.spelling)], 
+                    
         #node = Module([])
         #enum_value = 0
         #for c in children: 
@@ -52,11 +60,11 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         #        print("child tokens:", list(c.get_tokens()))
         #        #enum_value = int(list(c.get_tokens())[2])+1
         #node = Dict([Name(c.get_tokens().next()) for c in children], []) 
-        return
 
     if nt == "ENUM_CONSTANT_DECL":
         print_node_info(n)
-        node = Constant(literal_eval(tokens[0]))
+        print("enum value:", n.enum_value)
+        node = Assign([Name(n.spelling)], Constant(n.enum_value))
 
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
@@ -229,7 +237,7 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         print("creating a new array index...")
         print_node_info(n)
         node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
-        if unexposed:
+        if rvalue:
             node = Call(Name('Deref', Load()), 
                         [create_ast_node(children[0]),
                          create_ast_node(children[1])],
@@ -296,12 +304,12 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
                 size = n.type.get_pointee().get_array_element_type().get_size()
 
-            node = Call(Attribute(create_ast_node(children[0], unexposed=True), 'get_pointer', Load()), [], [])
+            node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_pointer', Load()), [], [])
             #else:
             #    print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
             #    sys.exit(1)
         elif operator == '*':
-            node = Call(Attribute(create_ast_node(children[0], unexposed=True), 'get_value', Load()), [], [])
+            node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_value', Load()), [], [])
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
