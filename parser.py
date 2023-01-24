@@ -25,7 +25,7 @@ def force_stmt(n):
     else:
         return Expr(n)
 
-def create_ast_node(n, name_opt=Load()):
+def create_ast_node(n, name_opt=Load(), unexposed=False):
     global switch_counter, switch_stack, STRICT_TYPING
     # determine the type of node to create
     stars()
@@ -253,10 +253,9 @@ def create_ast_node(n, name_opt=Load()):
                          Constant(n.type.get_pointee().get_size())], [])
 
     if nt == "UNEXPOSED_EXPR":
-        print("creating a new UNEXPOSED_EXPR (If)...")
+        print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
-        # node = Call(Name('Data', Load()), [create_ast_node(children[0]), Constant(n.type.get_size())], [])
-        node = create_ast_node(children[0])
+        node = create_ast_node(children[0], unexposed=True)
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
