@@ -1,51 +1,51 @@
 import sys
 import re
 from helper_classes import Deref
-EOF = -1
-stdout = sys.stdout.buffer
-stdin = sys.stdin.detach()
-stderr = sys.stderr.buffer
+EOF = [-1]
+stdout = [sys.stdout.buffer]
+stdin = [sys.stdin.detach()]
+stderr = [sys.stderr.buffer]
 
 def _fmode(mode):
-    modes = str(mode)
+    modes = str(mode[0])
     if 'b' in modes:
         return modes
     else:
         return modes + 'b'
 
 def fopen(fname, mode):
-    return open(str(fname), _fmode(mode))
+    return open(str(fname[0]), _fmode(mode))
 
 def freopen(fname, mode, stream):
-    stream.close()
-    fname = str(fname)
+    stream[0].close()
+    fname = str(fname[0])
     if not fname:
         fname = stream.name
     return open(fname, _fmode(mode))
 
 def fclose(stream):
-    stream.close()
+    stream[0].close()
 
 def fflush(stream):
-    stream.flush()
+    stream[0].flush()
 
 def fread(buf, size, count, stream):
-    need = size * count
+    need = size[0] * count[0]
     got = 0
     while need > 0:
-        chunk = stream.read(need)
+        chunk = stream[0].read(need)
         if not chunk:
             break
         for (i,c) in enumerate(chunk):
             buf[got] = c
             got += 1
             need -= 1
-    return got // size
+    return got // size[0]
 
 def puts(string):
-    stdout.write(str(string).encode())
-    stdout.write(b'\n')
-    stdout.flush()
+    stdout[0].write(str(string[0]).encode())
+    stdout[0].write(b'\n')
+    stdout[0].flush()
 
 def printf(fmt, *args):
     fprintf(stdout, fmt, *args)
@@ -53,17 +53,17 @@ def printf(fmt, *args):
 def fprintf(stream, fmt, *args):
     formatted_args = []
     for a in args:
-        if isinstance(a, Deref):
-            formatted_args.append(a.get_value())
+        if isinstance(a[0], Deref):
+            formatted_args.append(a[0].get_value())
         else:
-            formatted_args.append(a)
+            formatted_args.append(a[0])
 
     formatted_args = tuple(formatted_args)
-    output = str(fmt) % formatted_args
+    output = str(fmt[0]) % formatted_args
 
-    #output = str(fmt) % tuple(a for a in args)
-    stream.write(output.encode())
-    stream.flush()
+    #output = str(fmt[0]) % tuple(a[0] for a in args)
+    stream[0].write(output.encode())
+    stream[0].flush()
 
 def scanf(fmt, *args):
     return fscanf(stdin, fmt, *args)
@@ -181,9 +181,9 @@ _scanf_fmt = re.compile(r"""
     """, re.VERBOSE | re.DOTALL)
 
 def fscanf(stream, fmt, *args):
-    rdr = _Reader(stream)
-    fstring = str(fmt)
-    dest_it = iter(x for x in args)
+    rdr = _Reader(stream[0])
+    fstring = str(fmt[0])
+    dest_it = iter(x[0] for x in args)
     nassign = 0
     lastend = 0
     for fmatch in _scanf_fmt.finditer(fstring):
@@ -287,12 +287,12 @@ def fscanf(stream, fmt, *args):
                 for i in range(len(rhs)):
                     dest[i] = rhs[i]
             else:
-                dest = rhs
+                dest[0] = rhs
             nassign += 1
     else:
         if lastend != len(fstring):
             raise ValueError(f"scanf format string invalid at '{fstring[lastend:]}'")
     if nassign == 0 and rdr.eof:
-        return EOF
+        return EOF[0]
     else:
         return nassign

@@ -150,8 +150,9 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         if n.referenced.kind == CursorKind.FUNCTION_DECL:
             node = Name(n.spelling, name_opt)
         else:
-
-            node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
+            # remnant from when everything was an array index
+            #node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
+            node = Name(n.spelling, name_opt)
 
     if nt == "DECL_STMT":
         print("creating a new something or another...")
@@ -189,18 +190,26 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
                 array = create_ast_node(children[0])
 
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
+            # remnant from when everything was an array index
+            #node = Assign([Name(n.spelling, Store())], 
+            #              List([Call(Name('Pointer', Load()),
+            #                         [array,
+            #                          Constant(0), 
+            #                          Constant(n.type.element_type.get_size())],
+            #                         [])],
+            #                   Load()))
+
             node = Assign([Name(n.spelling, Store())], 
-                          List([Call(Name('Pointer', Load()),
+                          Call(Name('Pointer', Load()),
                                      [array,
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
-                                     [])],
-                               Load()))
-
+                                     []))
+                               
         elif len(children) < 1:
-            node = Assign([Name(n.spelling, Store())], List([Constant(None)], Load()))
+            node = Assign([Name(n.spelling, Store())], Constant(None))
         else:
-            node = Assign([Name(n.spelling, Store())], List([create_ast_node(children[0])], Load()))
+            node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
         #if STRICT_TYPING:
             #node = add_overflow_check(n, node)
 
@@ -220,10 +229,11 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         print("creating a new array index...")
         print_node_info(n)
         node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
-        node = Call(Name('Deref', Load()), 
-                    [create_ast_node(children[0]),
-                     create_ast_node(children[1])],
-                    [])
+        if unexposed:
+            node = Call(Name('Deref', Load()), 
+                        [create_ast_node(children[0]),
+                         create_ast_node(children[1])],
+                        [])
 
     if nt == "INIT_LIST_EXPR":
         print("creating a new List...")
@@ -255,7 +265,7 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
-        node = create_ast_node(children[0], unexposed=True)
+        node = create_ast_node(children[0])
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -271,7 +281,7 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         print_node_info(n)
         node = Call([], [], [])
         node.func = create_ast_node(children[0])
-        node.args = [List([c], Load()) for c in create_expr_list(children[1:])]
+        node.args = [c for c in create_expr_list(children[1:])]
         #node.args = create_expr_list(children[1:])
 
     if nt == "UNARY_OPERATOR":
@@ -286,23 +296,12 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
                 size = n.type.get_pointee().get_array_element_type().get_size()
 
-            #if children[0].kind == CursorKind.ARRAY_SUBSCRIPT_EXPR:
-            #   node = Call(Attribute(create_ast_node(children[0]), 'get_pointer', Load()), [], [])
-            #elif children[0].kind == CursorKind.DECL_REF_EXPR:
-            #    node = Call(Name('Pointer', Load()), [Name(tokens[1], Load()), Constant(0), Constant(size)], [])
-            node = Call(Attribute(create_ast_node(children[0]), 'get_pointer', Load()), [], [])
+            node = Call(Attribute(create_ast_node(children[0], unexposed=True), 'get_pointer', Load()), [], [])
             #else:
             #    print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
             #    sys.exit(1)
         elif operator == '*':
-            node = Call(Attribute(create_ast_node(children[0]), 'get_value', Load()), [], [])
-            if list(children[0].get_children())[0].kind == CursorKind.ARRAY_SUBSCRIPT_EXPR:
-                node = Call(Attribute(Call(Attribute(create_ast_node(children[0]), 'get_value', Load()), [], []), 'get_value', Load()), [], [])
-            #elif list(children[0].get_children())[0].kind == CursorKind.DECL_REF_EXPR:
-            #    node = Subscript(create_ast_node(children[0]), Attribute(create_ast_node(children[0]), 'index', Load()))
-            #else:
-            #    print("UH OH, NEW TYPE HAS APPEARED FOR DEREFERENCING (*)!")
-            #    sys.exit(1)
+            node = Call(Attribute(create_ast_node(children[0], unexposed=True), 'get_value', Load()), [], [])
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
@@ -330,6 +329,7 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
             # print(overflow)
             ltc, rtc = map(type_category,children)
             node = BinOp(create_ast_node(children[0]), translate_operator(operator,ltc,rtc), create_ast_node(children[1]))
+
     # **************************************
     # **************************************
     # **************************************
@@ -420,7 +420,10 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
             chi = Assign([Name(state_name, Store())], List([Constant(2)], Load()))
         else:
             chi = force_stmt(create_ast_node(children[1]))
-        node = If(test=BoolOp(op=Or(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Subscript(Name(switch_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
+
+        # remnant from when everything was an array index
+        #node = If(test=BoolOp(op=Or(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Subscript(Name(switch_name, ctx=Load()), Constant(0), name_opt), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
+        node = If(test=BoolOp(op=Or(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=1)]), BoolOp(op=And(), values=[Compare(left=Name(state_name, ctx=Load()), ops=[Eq()], comparators=[Constant(value=0)]), Compare(left=Name(switch_name, ctx=Load()), ops=[Eq()], comparators=[create_ast_node(children[0])])])]), body=[chi], orelse=[])
         #if is_child(children[1].get_children(), "BREAK_STMT"):
             #print("THIS CASE HAS A BREAK STATEMENT!")
             #node.body.insert(Assign([Name(state_name, Store())], List([Constant(2)], Load())), 0)
@@ -429,12 +432,17 @@ def create_ast_node(n, name_opt=Load(), unexposed=False):
         print_node_info(n)
         state_name, switch_name = switch_stack[-1]
         if children[0].kind == CursorKind.BREAK_STMT:
-            chi = Assign([Subscript(Name(state_name, ctx=Load()), Constant(0), Store())], List([Constant(2)], Load()))
+            # remnant from when everything was an array index
+            #chi = Assign([Subscript(Name(state_name, ctx=Load()), Constant(0), Store())], List([Constant(2)], Load()))
+            chi = Assign([Name(state_name, ctx=Load())], List([Constant(2)], Load()))
         else:
             chi = force_stmt(create_ast_node(children[0]))
-
-        node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
-        node = If(test=Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Lt()], comparators=[Constant(value=2)]), body=[chi], orelse=[])
+        # remnant from when everything was an array index
+        #node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
+        node = Name(n.spelling, Load())
+        # remnant from when everything was an array index
+        #node = If(test=Compare(left=Subscript(Name(state_name, ctx=Load()), Constant(0), name_opt), ops=[Lt()], comparators=[Constant(value=2)]), body=[chi], orelse=[])
+        node = If(test=Compare(left=Name(state_name, ctx=Load()), ops=[Lt()], comparators=[Constant(value=2)]), body=[chi], orelse=[])
 
     # ************************************** 
     # ************* STATEMENTS ************* 

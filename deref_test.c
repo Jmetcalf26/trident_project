@@ -10,6 +10,7 @@ int main(){
 	int r = 2;
 
 	q = r;
+
 	x[0] = 1;
 	int p = x[0] + x[1];
 	int * a = &x[0];

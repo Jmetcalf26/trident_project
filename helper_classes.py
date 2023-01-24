@@ -8,7 +8,14 @@ class Deref:
         return self.pointer.get_value()
     def get_pointer(self):
         return self.pointer
-
+    def __add__(self, a):
+        return self.get_value() + a
+    def __radd__(self, a):
+        return self.get_value() + a
+    def __int__(self):
+        return self.get_value()
+    def __index__(self):
+        return self.__int__()
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         global memory_counter
