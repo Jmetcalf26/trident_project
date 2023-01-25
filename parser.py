@@ -40,31 +40,6 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     # ******* CURRENTLY WORKING NODE ********
     # *************************************** 
 
-    if nt == "ENUM_DECL":
-        print_node_info(n)
-
-        #node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
-        keys = [c.spelling for c in children]
-        values = [c.enum_value for c in children]
-        node = Assign([Name(n.spelling)], Dict(keys, values))
-        
-        #node = Assign([Name(n.spelling)], 
-                    
-        #node = Module([])
-        #enum_value = 0
-        #for c in children: 
-        #    if len(list(c.get_children())) < 1:
-        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(enum_value)))
-        #    else:
-        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(create_ast_node(list(c.get_children())[0]))))
-        #        print("child tokens:", list(c.get_tokens()))
-        #        #enum_value = int(list(c.get_tokens())[2])+1
-        #node = Dict([Name(c.get_tokens().next()) for c in children], []) 
-
-    if nt == "ENUM_CONSTANT_DECL":
-        print_node_info(n)
-        print("enum value:", n.enum_value)
-        node = Assign([Name(n.spelling)], Constant(n.enum_value))
 
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
@@ -155,12 +130,12 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     if nt == "DECL_REF_EXPR":
         print("creating a new Name...")
         print_node_info(n)
-        if n.referenced.kind == CursorKind.FUNCTION_DECL:
-            node = Name(n.spelling, name_opt)
+
+        if n.referenced.kind == CursorKind.ENUM_CONSTANT_DECL:
+            node = Subscript(Name(n.referenced.semantic_parent.spelling), Constant(n.spelling))
         else:
-            # remnant from when everything was an array index
-            #node = Subscript(Name(n.spelling, Load()), Constant(0), name_opt)
             node = Name(n.spelling, name_opt)
+
 
     if nt == "DECL_STMT":
         print("creating a new something or another...")
@@ -337,6 +312,28 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
             # print(overflow)
             ltc, rtc = map(type_category,children)
             node = BinOp(create_ast_node(children[0]), translate_operator(operator,ltc,rtc), create_ast_node(children[1]))
+
+    if nt == "ENUM_DECL":
+        print_node_info(n)
+
+        keys = [Constant(c.spelling) for c in children]
+        values = [Constant(c.enum_value) for c in children]
+        node = Assign([Name(n.spelling)], Dict(keys, values))
+        
+        #node = Module([])
+        #enum_value = 0
+        #for c in children: 
+        #    if len(list(c.get_children())) < 1:
+        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(enum_value)))
+        #    else:
+        #        node.body.append(Assign([Name(c.spelling, Store())], Constant(create_ast_node(list(c.get_children())[0]))))
+        #        print("child tokens:", list(c.get_tokens()))
+        #        #enum_value = int(list(c.get_tokens())[2])+1
+
+    if nt == "ENUM_CONSTANT_DECL":
+        print_node_info(n)
+        print("enum value:", n.enum_value)
+        node = Assign([Name(n.spelling)], Constant(n.enum_value))
 
     # **************************************
     # **************************************
