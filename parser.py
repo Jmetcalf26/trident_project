@@ -47,8 +47,10 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
 
     if nt == "STRUCT_DECL":
         print_node_info(n)
-        return
-    
+        node = ClassDef(n.spelling, [Name(c.spelling) for c in children], [], [Pass()], [])
+    if nt == "MEMBER_REF_EXPR":
+        print_node_info(n)
+        node = Attribute(create_ast_node(children[0]), Name(n.spelling))
     if nt == "TYPE_REF":
         print_node_info(n)
         return
@@ -188,7 +190,13 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
                                      []))
-                               
+        elif get_type(n) == "RECORD":
+            print_type_info(n.type)
+            print("GIVE ME CAR:", n.type.get_declaration().spelling)
+            struct_name = n.type.get_declaration().spelling
+            lhs = [Name(n.spelling, Store())]
+            rhs = Call(Name(struct_name), create_expr_list(children[1:]), [])
+            node = Assign(lhs, rhs)
         elif len(children) < 1:
             node = Assign([Name(n.spelling, Store())], Constant(None))
         else:

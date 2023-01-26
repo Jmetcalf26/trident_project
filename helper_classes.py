@@ -1,8 +1,11 @@
 from sys import *
 from helper_functions import *
 memory_counter = 16
+class Trigger:
+    def __or__(self, a):
+        return Pointer(a, 0, 1)
 class Deref:
-    def __init__(self, pointer, index):
+    def __init__(self, pointer, index=0):
         self.pointer = pointer + index
     def get_value(self):
         return self.pointer.get_value()

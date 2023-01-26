@@ -2,17 +2,20 @@
 // of enum in C
 #include<stdio.h>
 
-enum year{Jan, Feb, Mar, Apr, May, Jun, Jul,
-		Aug, Sep, Oct, Nov, Dec};
+struct Car {
+  char brand[50];
+  char model[50];
+  int year;
+};
 
-enum State {Working = 1, Failed = 0, Freezed = 0};
-int main()
-{
-int i;
-for (i=Jan; i<=Dec; i++)	
-	printf("%d ", i);
-	
-return 0;
+int main(){
+	struct Car car1 = {"BMW", "X5", 1999};
+  struct Car car2 = {"Ford", "Mustang", 1969};
+  struct Car car3 = {"Toyota", "Corolla", 2011};
+  struct Car car4;
+  printf("%s %s %d\n", car1.brand, car1.model, car1.year);
+  printf("%s %s %d\n", car2.brand, car2.model, car2.year);
+  printf("%s %s %d\n", car3.brand, car3.model, car3.year);
 }
 
 

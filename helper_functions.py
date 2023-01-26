@@ -216,6 +216,8 @@ def stars():
 
 def print_c_ast(n, depth): 
     nt = str(n.kind)[11:]
+    if nt == "MACRO_DEFINITION":
+        return
     print((' '*depth) + nt, end=' ')
     print("|".join(t.spelling for t in n.get_tokens()))
     # for t in n.get_tokens():

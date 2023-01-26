@@ -12,7 +12,7 @@ int main(){
 	q = r;
 
 	x[0] = 1;
-	int p = x[0] + x[1];
+	int  p= x[0] + x[|'a', type1];
 	int * a = &x[0];
 	int * b = &x[1];
 	int * c = &x[2];
@@ -20,6 +20,7 @@ int main(){
 	printf("%x\n", b);
 	printf("%x\n", c);
 	
+	printf("%x\n", &q);
 	printf("%d\n", *a);
 	printf("%d\n", *b);
 	printf("%d\n", *c);
