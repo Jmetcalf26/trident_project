@@ -33,7 +33,7 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     tokens = list((t.spelling for t in n.get_tokens()))
     children = list(n.get_children())
 
-    print("IN CREATE AST NODE, I want to create a", nt)
+    print("IN CREATE AST NODE, I want to create a", nt) 
     print("|".join(t for t in tokens))
 
     # *************************************** 
@@ -135,6 +135,8 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
 
         if n.referenced.kind == CursorKind.ENUM_CONSTANT_DECL:
             node = Subscript(Name(n.referenced.semantic_parent.spelling), Constant(n.spelling))
+        elif rvalue:
+            node = Attribute(Name(n.spelling), 'value')
         else:
             node = Name(n.spelling, name_opt)
 
@@ -154,12 +156,14 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
         elif get_type(n) == "VARIABLEARRAY":
             print("variable array")
             node = Assign([Name(n.spelling, Store())], 
-                          List([Call(Name('Pointer', Load()), 
+                          Call(Name('variable'),
+                               [Call(Name('Pointer', Load()), 
                                      [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0])),
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
                                      [])],
-                               Load()))
+                               [keyword('size', Constant(n.type.element_type.get_size()))]
+                               ))
 
         elif get_type(n) == "CONSTANTARRAY":
             print("constant array")
@@ -185,11 +189,15 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
             #                   Load()))
 
             node = Assign([Name(n.spelling, Store())], 
-                          Call(Name('Pointer', Load()),
+                          Call(Name('variable'),
+                               [Call(Name('Pointer', Load()),
                                      [array,
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
-                                     []))
+                                     [])], 
+                               [keyword('size', Constant(n.type.element_type.get_size()))]
+                               ))
+
         elif get_type(n) == "RECORD":
             print_type_info(n.type)
             print("GIVE ME CAR:", n.type.get_declaration().spelling)
@@ -197,13 +205,18 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
             lhs = [Name(n.spelling, Store())]
             rhs = Call(Name(struct_name), create_expr_list(children[1:]), [])
             node = Assign(lhs, rhs)
+        #elif get_type(n) == "POINTER":
+            #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
         elif len(children) < 1:
             node = Assign([Name(n.spelling, Store())], Constant(None))
         else:
-            node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
+            #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
+            node = Assign([Name(n.spelling, Store())],
+                          Call(Name('variable'),
+                               [create_ast_node(children[0])], 
+                               [keyword('size', Constant(children[0].type.get_size()))]))
         #if STRICT_TYPING:
             #node = add_overflow_check(n, node)
-
     if nt == "COMPOUND_ASSIGNMENT_OPERATOR":
         print_node_info(n)
         print("creating a new AugAssign...")
@@ -256,7 +269,7 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
-        node = create_ast_node(children[0])
+        node = create_ast_node(children[0], rvalue=True)
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -287,12 +300,16 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
                 size = n.type.get_pointee().get_array_element_type().get_size()
 
-            node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_pointer', Load()), [], [])
+            node = Call(Attribute(create_ast_node(children[0]), 'get_pointer', Load()), [], [])
             #else:
             #    print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
             #    sys.exit(1)
         elif operator == '*':
-            node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_value', Load()), [], [])
+            if rvalue:
+                node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_value', Load()), [], [])
+            else:
+                node = Call(Name('Deref'), [create_ast_node(children[0], rvalue=True), Constant(0)], [])
+
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))
         elif '--' in tokens:
@@ -312,7 +329,7 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
         elif operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
-            node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
+            node = Assign([Attribute(create_ast_node(children[0], name_opt=Store()), 'value')], create_ast_node(children[1]))
         else:
             print(get_type(children[0]), get_type(children[1]))
             print(children[0].type.get_size(), children[1].type.get_size())

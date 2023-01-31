@@ -4,6 +4,7 @@ memory_counter = 16
 class Trigger:
     def __or__(self, a):
         return Pointer(a, 0, 1)
+
 class Deref:
     def __init__(self, pointer, index=0):
         self.pointer = pointer + index
@@ -19,6 +20,18 @@ class Deref:
         return self.get_value()
     def __index__(self):
         return self.__int__()
+
+    def __setattr__(self, name, value):
+        if name == 'value':
+            self.pointer.value = value
+        else:
+            super().__setattr__(name, value)
+    def __getattr__(self, name, value):
+        if name == 'value':
+            return self.pointer.value
+        else:
+            super().__getattr__(name, value)
+
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         global memory_counter
@@ -35,6 +48,17 @@ class Pointer:
         else:
             self.memory_loc = memory_loc
 
+    def __setattr__(self, name, value):
+        if name == 'value':
+            self.array[self.index] = value
+        else:
+            super().__setattr__(name, value)
+    def __getattr__(self, name, value):
+        if name == 'value':
+            return self.pointer.value
+        else:
+            super().__getattr__(name, value)
+
     def get_size(self):
         return self.size
     def get_array(self):
@@ -49,16 +73,6 @@ class Pointer:
         return self.array[i]
     def __setitem__(self, i, a):
         self.array[i] = a
-    # def __setattr__(self, name, value):
-    #     if name == 'value':
-    #         self.array[self.index] = value
-    #     else:
-    #         super().__setattr__(name, value)
-    # def __getattribute__(self, name):
-    #     if name == 'value':
-    #         return self.array[self.index]
-    #     else:
-    #         super().__getattribute__(name)
     def __str__(self):
         if self.size == 1:
             try:
@@ -141,3 +155,6 @@ class Pointer_alias:
         return self.pointer.memory_loc
     def __add__(self, a):
         return Pointer_alias(self.pointer, self.a_size, self.index + a)
+
+def variable(a, index=0, size=1):
+    return Deref(Pointer([a], 0, size), index)
