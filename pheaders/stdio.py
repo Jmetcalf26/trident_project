@@ -59,6 +59,8 @@ def fprintf(stream, fmt, *args):
             formatted_args.append(a)
 
     formatted_args = tuple(formatted_args)
+    print("fmt:", fmt)
+    print("formatted args:", formatted_args)
     output = str(fmt) % formatted_args
 
     #output = str(fmt) % tuple(a for a in args)

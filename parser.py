@@ -25,16 +25,17 @@ def force_stmt(n):
     else:
         return Expr(n)
 
-def create_ast_node(n, name_opt=Load(), rvalue=False):
+def create_ast_node(n, name_opt=Load()):
     global switch_counter, switch_stack, STRICT_TYPING
     # determine the type of node to create
-    stars()
     nt = str(n.kind)[11:]
     tokens = list((t.spelling for t in n.get_tokens()))
     children = list(n.get_children())
 
-    print("IN CREATE AST NODE, I want to create a", nt) 
-    print("|".join(t for t in tokens))
+    if not n.kind.is_preprocessing():
+        stars()
+        print("IN CREATE AST NODE, I want to create a", nt) 
+        print("|".join(t for t in tokens))
 
     # *************************************** 
     # ******* CURRENTLY WORKING NODE ********
@@ -258,6 +259,8 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
         if get_type(n) == "INT":
             node = Call(Name('int'), [create_ast_node(children[0])], [])
         
+        if get_type(n) == "CHAR_S":
+            node = Call(Name('chr'), [create_ast_node(children[0])], [])
         if get_type(n) == "POINTER":
             stars()
             print("CHILD OF POINTER:")
@@ -269,12 +272,20 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
+        #extended_node_info(n)
         if n.referenced is not None and n.referenced.kind == CursorKind.FUNCTION_DECL:
+            node = create_ast_node(children[0])
+        elif children[0].kind == CursorKind.UNEXPOSED_EXPR:
+            if get_type(n) == "POINTER":
+                print("first unexposed size:", n.type.get_pointee().get_size())
+                print("second unexposed size:", children[0].type.get_pointee().get_size())
+            else:
+                print("first unexposed size:", n.type.get_size())
+                print("second unexposed size:", children[0].type.get_size())
+            
             node = create_ast_node(children[0])
         else:
             node = Attribute(create_ast_node(children[0]), 'value', Load())
-        if children[0].kind == CursorKind.UNEXPOSED_EXPR:
-            node = create_ast_node(children[0])
 
 
     if nt == "PARM_DECL":
@@ -515,10 +526,8 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
         print("children:")
         for i in n.get_children():
             print(str(i.kind)[11:], i.spelling)
-        for i in range(len(tokens)):
-            if tokens[i] == "(":
-                name_token = tokens[i-1]
-                break
+
+        name_token = n.spelling
         print("BADABING:", name_token)
         node = FunctionDef(name_token, body=[], decorator_list=[])
         # get the number of arguments

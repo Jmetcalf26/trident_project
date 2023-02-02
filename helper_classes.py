@@ -21,17 +21,17 @@ class Deref:
     def __index__(self):
         return self.__int__()
 
-    def __setattr__(self, name, value):
+    def __setattribute__(self, name, value):
         if name == 'value':
             self.pointer.value = value
         else:
-            super().__setattr__(name, value)
+            super().__setattribute__(name, value)
 
-    def __getattr__(self, name):
+    def __getattribute__(self, name):
         if name == 'value':
             return self.pointer.value
         else:
-            super().__getattr__(name)
+            super().__getattribute__(name)
 
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
@@ -50,13 +50,13 @@ class Pointer:
         else:
             self.memory_loc = memory_loc
 
-    def __setattr__(self, name, value):
+    def __setattribute__(self, name, value):
         if name == 'value':
             self.array[self.index] = value
         else:
-            super().__setattr__(name, value)
+            super().__setattribute__(name, value)
 
-    def __getattr__(self, name):
+    def __getattribute__(self, name):
         if name == 'value':
             # you gotta account for the case that the value is a string, not just a single index in the array
             if self.size == 1:
@@ -67,7 +67,7 @@ class Pointer:
                     value+=chr(c)
             return self.array[self.index]
         else:
-            super().__getattr__(name)
+            super().__getattribute__(name)
 
     def __add__(self, a):
         return Pointer(self.array, self.index + a, self.size, self.memory_loc)
@@ -103,6 +103,25 @@ class Pointer_alias:
             self.index = index
     def __str__(self):
         return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
+
+    def __setattr__(self, name, value):
+        if name == 'value':
+            self.array[self.index] = value
+        else:
+            super().__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        if name == 'value':
+            # you gotta account for the case that the value is a string, not just a single index in the array
+            if self.size == 1:
+                value = ""
+                for c in self.array:
+                    if c == 0:
+                        return value
+                    value+=chr(c)
+            return self.array[self.index]
+        else:
+            super().__getattribute__(name)
 
     def __getitem__(self, i):
         if self.a_size < self.pointer.size:

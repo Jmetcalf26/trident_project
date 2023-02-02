@@ -1,20 +1,11 @@
-// Another example program to demonstrate working
-// of enum in C
-#include<stdio.h>
-
+#include <stdio.h>
 int main(){
-  int i =0;
-  int j = 0;
-  i = 1;
-  int * a = &i;
-  a = &j;
-  *a = 2;
-  j = *a;
-  int k[4] = {0, 1, 2};
-  a = &k[2];
-  printf("%d\n", i);
-  printf("%x\n", a);
-  printf("%d\n", j);
-  printf("%d\n", j);
-  printf("%d\n", *a);
+  int a = 0x11223344;
+  int * b = &a;
+  char * c = (char *) b;
+  printf("%c\n", c[0]);
+  printf("%c\n", (char) c[0]);
+  char * d = "heyy";
+  printf("%d\n", d[0]);
+  printf("%c\n", (char) d[0]);
 }
