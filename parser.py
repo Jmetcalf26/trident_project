@@ -135,8 +135,8 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
 
         if n.referenced.kind == CursorKind.ENUM_CONSTANT_DECL:
             node = Subscript(Name(n.referenced.semantic_parent.spelling), Constant(n.spelling))
-        elif rvalue:
-            node = Attribute(Name(n.spelling), 'value')
+        elif n.referenced.kind == CursorKind.FUNCTION_DECL:
+            node = Name(n.spelling, name_opt)
         else:
             node = Name(n.spelling, name_opt)
 
@@ -162,7 +162,7 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
                                      [])],
-                               [keyword('size', Constant(n.type.element_type.get_size()))]
+                               [keyword('size', Constant(8))]
                                ))
 
         elif get_type(n) == "CONSTANTARRAY":
@@ -195,7 +195,7 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
                                       Constant(0), 
                                       Constant(n.type.element_type.get_size())],
                                      [])], 
-                               [keyword('size', Constant(n.type.element_type.get_size()))]
+                               [keyword('size', Constant(8))]
                                ))
 
         elif get_type(n) == "RECORD":
@@ -232,12 +232,12 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     if nt == "ARRAY_SUBSCRIPT_EXPR":
         print("creating a new array index...")
         print_node_info(n)
-        node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
-        if rvalue:
-            node = Call(Name('Deref', Load()), 
-                        [create_ast_node(children[0]),
-                         create_ast_node(children[1])],
-                        [])
+        #node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
+        node = Call(Name('Deref', Load()), 
+                    [create_ast_node(children[0]),
+                     create_ast_node(children[1])],
+                    [])
+        
 
     if nt == "INIT_LIST_EXPR":
         print("creating a new List...")
@@ -269,7 +269,13 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
-        node = create_ast_node(children[0], rvalue=True)
+        if n.referenced is not None and n.referenced.kind == CursorKind.FUNCTION_DECL:
+            node = create_ast_node(children[0])
+        else:
+            node = Attribute(create_ast_node(children[0]), 'value', Load())
+        if children[0].kind == CursorKind.UNEXPOSED_EXPR:
+            node = create_ast_node(children[0])
+
 
     if nt == "PARM_DECL":
         print("creating a new arg...")
@@ -300,15 +306,12 @@ def create_ast_node(n, name_opt=Load(), rvalue=False):
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
                 size = n.type.get_pointee().get_array_element_type().get_size()
 
-            node = Call(Attribute(create_ast_node(children[0]), 'get_pointer', Load()), [], [])
+            node = Attribute(create_ast_node(children[0]), 'pointer', Load())
             #else:
             #    print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
             #    sys.exit(1)
         elif operator == '*':
-            if rvalue:
-                node = Call(Attribute(create_ast_node(children[0], rvalue=True), 'get_value', Load()), [], [])
-            else:
-                node = Call(Name('Deref'), [create_ast_node(children[0], rvalue=True), Constant(0)], [])
+            node = Call(Name('Deref'), [create_ast_node(children[0])], [])
 
         elif '++' in tokens:
             node = AugAssign(create_ast_node(children[0], name_opt=Store()), Add(), Constant(1))

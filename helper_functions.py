@@ -239,15 +239,8 @@ def cursor_bools(n):
     print('n.kind.is_unexposed', n.kind.is_unexposed())
 
 def extended_node_info(n):
-    print('n.kind.is_attribute', n.kind.is_attribute())
-    print('n.kind.is_declaration', n.kind.is_declaration())
-    print('n.kind.is_expression', n.kind.is_expression())
-    print('n.kind.is_invalid', n.kind.is_invalid())
-    print('n.kind.is_preprocessing', n.kind.is_preprocessing())
-    print('n.kind.is_reference', n.kind.is_reference())
-    print('n.kind.is_statement', n.kind.is_statement())
-    print('n.kind.is_translation_unit', n.kind.is_translation_unit())
-    print('n.kind.is_unexposed', n.kind.is_unexposed())
+    print('n.is_const_method()', n.is_const_method())
+    print('n.is_mutable_field()', n.is_mutable_field())
     print('spelling:', n.spelling)
     print('raw_comment:', n.raw_comment)
     print('result_type:', n.result_type)
@@ -258,9 +251,11 @@ def extended_node_info(n):
     print('semantic_parent:', n.semantic_parent)
     print('linkage:', n.linkage)
     print('referenced:', n.referenced)
-    print('='*10)
-    print_node_info(n.referenced)
-    print('='*10)
+    cursor_bools(n)
+    if n.referenced is not None:
+        print('='*10)
+        print_node_info(n.referenced)
+        print('='*10)
     print_type_info(n.type)
 
 def print_type_info(typ):

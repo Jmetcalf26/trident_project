@@ -11,4 +11,10 @@ int main(){
   *a = 2;
   j = *a;
   int k[4] = {0, 1, 2};
+  a = &k[2];
+  printf("%d\n", i);
+  printf("%x\n", a);
+  printf("%d\n", j);
+  printf("%d\n", j);
+  printf("%d\n", *a);
 }

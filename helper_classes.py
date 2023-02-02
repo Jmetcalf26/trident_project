@@ -26,11 +26,12 @@ class Deref:
             self.pointer.value = value
         else:
             super().__setattr__(name, value)
-    def __getattr__(self, name, value):
+
+    def __getattr__(self, name):
         if name == 'value':
             return self.pointer.value
         else:
-            super().__getattr__(name, value)
+            super().__getattr__(name)
 
 class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
@@ -41,7 +42,8 @@ class Pointer:
         self.array = array
         self.index = index
         self.size = size
-
+        if not isinstance(self.array, list):
+            self.array = [self.array]
         if memory_loc is None:
             self.memory_loc = memory_counter
             memory_counter += len(array)*size
@@ -53,18 +55,20 @@ class Pointer:
             self.array[self.index] = value
         else:
             super().__setattr__(name, value)
-    def __getattr__(self, name, value):
-        if name == 'value':
-            return self.pointer.value
-        else:
-            super().__getattr__(name, value)
 
-    def get_size(self):
-        return self.size
-    def get_array(self):
-        return self.array
-    def get_value(self):
-        return self.array[self.index]
+    def __getattr__(self, name):
+        if name == 'value':
+            # you gotta account for the case that the value is a string, not just a single index in the array
+            if self.size == 1:
+                value = ""
+                for c in self.array:
+                    if c == 0:
+                        return value
+                    value+=chr(c)
+            return self.array[self.index]
+        else:
+            super().__getattr__(name)
+
     def __add__(self, a):
         return Pointer(self.array, self.index + a, self.size, self.memory_loc)
     def __get__(self, n):
@@ -73,16 +77,16 @@ class Pointer:
         return self.array[i]
     def __setitem__(self, i, a):
         self.array[i] = a
-    def __str__(self):
-        if self.size == 1:
-            try:
-                null_byte = self.array.index(0)
-            except ValueError:
-                raise ValueError("No null byte in string") from None
-            return ''.join(chr(x) for x in self.array[:null_byte])
-        else:
+    #def __str__(self):
+        #if self.size == 1:
+        #    try:
+        #        null_byte = self.array.index(0)
+        #    except ValueError:
+        #        raise ValueError("No null byte in string") from None
+        #    return ''.join(chr(x) for x in self.array[:null_byte])
+        #else:
             
-            raise NotImplementedError("need pointer alias for string conversion")
+            #raise NotImplementedError("need pointer alias for string conversion")
 
     def __int__(self):
         return self.memory_loc + self.index * self.size
