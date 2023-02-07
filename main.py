@@ -49,6 +49,7 @@ root_ast = Module([],[])
 childs = list(root.get_children())
 
 root_ast.body.append(ImportFrom(module='helper_classes', names=[alias(name='*')], level=0))
+root_ast.body.append(Assign([Name("𐓄")], Call(Name("Trigger"), [], [])))
 root_ast.body.extend(create_stmt_list(childs))
 print(root_ast.body)
 root_ast.body.append(add_main_check())

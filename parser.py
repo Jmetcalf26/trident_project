@@ -6,6 +6,7 @@ import astor
 from helper_functions import *
 from ast import *
 import sys
+l_values = [CursorKind.DECL_REF_EXPR, CursorKind.ARRAY_SUBSCRIPT_EXPR, CursorKind.UNARY_OPERATOR]
 
 def debug(x):
     global y
@@ -14,6 +15,7 @@ def debug(x):
 
 switch_counter = 0
 switch_stack = []
+
 def create_stmt_list(node_list):
     return [force_stmt(create_ast_node(n)) for n in node_list]
 def create_expr_list(node_list):
@@ -27,6 +29,7 @@ def force_stmt(n):
 
 def create_ast_node(n, name_opt=Load()):
     global switch_counter, switch_stack, STRICT_TYPING
+    global l_values
     # determine the type of node to create
     nt = str(n.kind)[11:]
     tokens = list((t.spelling for t in n.get_tokens()))
@@ -105,7 +108,7 @@ def create_ast_node(n, name_opt=Load()):
         #print(bytes(ord(x) for x in n.spelling).decode())
         a = bytes(map(ord, n.spelling))
         text = Constant(eval(tokens[0]))
-        node = Call(Name('Pointer', Load()), [text, Constant(0), Constant(1)], [])
+        node = BinOp(Name("𐓄"), BitOr(), text)
         
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
@@ -272,20 +275,46 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
+        print('smelvin', children[0].kind)
+        #child = create_ast_node(children[0])
+        
         #extended_node_info(n)
+
+        # FUNCTION CALL
         if n.referenced is not None and n.referenced.kind == CursorKind.FUNCTION_DECL:
             node = create_ast_node(children[0])
-        elif children[0].kind == CursorKind.UNEXPOSED_EXPR:
-            if get_type(n) == "POINTER":
-                print("first unexposed size:", n.type.get_pointee().get_size())
-                print("second unexposed size:", children[0].type.get_pointee().get_size())
-            else:
-                print("first unexposed size:", n.type.get_size())
-                print("second unexposed size:", children[0].type.get_size())
-            
-            node = create_ast_node(children[0])
-        else:
+        # L-VALUE TO R-VALUE
+        elif children[0].kind in l_values:
             node = Attribute(create_ast_node(children[0]), 'value', Load())
+        # IMPLICIT CAST TYPE 1
+        #elif children[0].kind == CursorKind.UNEXPOSED_EXPR:
+        else:
+            print("implicit cast")
+            casted_type = n.type.kind
+            original_type = children[0].type.kind
+            if get_type(n) == "POINTER":
+                print("pointer:")
+                print("  outer (casted) unexposed type:", n.type.get_pointee().kind)
+                print("  inner (original) unexposed type:", children[0].type.get_pointee().kind)
+                # create a pointer alias for the new type
+                node = create_ast_node(children[0])
+            else:
+                print("outer (casted) unexposed type:", casted_type)
+                print("inner (original) unexposed type:", original_type)
+                # create a node that does the appropriate cast based on the differing sizes
+                if casted_type == original_type:
+                    node = create_ast_node(children[0])
+                elif casted_type == TypeKind.INT:
+                    node = Call(Name('int'), [create_ast_node(children[0])], [])
+                elif casted_type == TypeKind.DOUBLE or casted_type == TypeKind.FLOAT:
+                    node = Call(Name('float'), [create_ast_node(children[0])], [])
+                elif casted_type == TypeKind.CHAR_S:
+                    node = Call(Name('chr'), [create_ast_node(children[0])], [])
+                else:
+                    node = create_ast_node(children[0])
+        #else:
+            #node = create_ast_node(children[0])
+
 
 
     if nt == "PARM_DECL":
