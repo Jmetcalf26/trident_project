@@ -292,12 +292,25 @@ def create_ast_node(n, name_opt=Load()):
             print("implicit cast")
             casted_type = n.type.kind
             original_type = children[0].type.kind
+
+            # IMPLICIT POINTER CAST
             if get_type(n) == "POINTER":
                 print("pointer:")
-                print("  outer (casted) unexposed type:", n.type.get_pointee().kind)
-                print("  inner (original) unexposed type:", children[0].type.get_pointee().kind)
+                casted_type = n.type.get_pointee().kind
+                original_type = children[0].type.get_pointee().kind
+
+                print("  outer (casted) unexposed type:", casted_type)
+                print("  inner (original) unexposed type:", original_type)
+
                 # create a pointer alias for the new type
-                node = create_ast_node(children[0])
+                if casted_type == original_type or original_type == TypeKind.INVALID:
+                    node = create_ast_node(children[0])
+                else:
+                    node = Call(Name('Pointer_alias', Load()), 
+                                [create_ast_node(children[0]), 
+                                 Constant(n.type.get_pointee().get_size())], [])
+
+            # IMPLICIT VARIABLE CAST
             else:
                 print("outer (casted) unexposed type:", casted_type)
                 print("inner (original) unexposed type:", original_type)
@@ -305,7 +318,10 @@ def create_ast_node(n, name_opt=Load()):
                 if casted_type == original_type:
                     node = create_ast_node(children[0])
                 elif casted_type == TypeKind.INT:
-                    node = Call(Name('int'), [create_ast_node(children[0])], [])
+                    if original_type == TypeKind.CHAR_S:
+                        node = create_ast_node(children[0])
+                    else:
+                        node = Call(Name('int'), [create_ast_node(children[0])], [])
                 elif casted_type == TypeKind.DOUBLE or casted_type == TypeKind.FLOAT:
                     node = Call(Name('float'), [create_ast_node(children[0])], [])
                 elif casted_type == TypeKind.CHAR_S:

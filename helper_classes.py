@@ -23,8 +23,8 @@ class Deref:
 
     @property
     def value(self):
-        
         return self.pointer.value
+
     @value.setter
     def value(self, val):
         self.pointer.value = val
@@ -52,31 +52,12 @@ class Pointer:
 
     @property
     def value(self):
-        print(self.array, self.index)
+        #print(self.array, self.index)
         return self.array[self.index]
     @value.setter
     def value(self, val):
         self.array[self.index] = val
-    '''
-    def __setattribute__(self, name, value):
-        if name == 'value':
-            self.array[self.index] = value
-        else:
-            super().__setattribute__(name, value)
 
-    def __getattribute__(self, name):
-        if name == 'value':
-            # you gotta account for the case that the value is a string, not just a single index in the array
-            if self.size == 1:
-                value = ""
-                for c in self.array:
-                    if c == 0:
-                        return value
-                    value+=chr(c)
-            return self.array[self.index]
-        else:
-            super().__getattribute__(name)
-    '''
     def __add__(self, a):
         #print(a, self.index)
         #print(self.array)
@@ -114,24 +95,13 @@ class Pointer_alias:
     def __str__(self):
         return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
 
-    def __setattr__(self, name, value):
-        if name == 'value':
-            self.array[self.index] = value
-        else:
-            super().__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        if name == 'value':
-            # you gotta account for the case that the value is a string, not just a single index in the array
-            if self.size == 1:
-                value = ""
-                for c in self.array:
-                    if c == 0:
-                        return value
-                    value+=chr(c)
-            return self.array[self.index]
-        else:
-            super().__getattribute__(name)
+    @property
+    def value(self):
+        #print('in p alias', self.pointer.array, self.index, self.a_size)
+        return self[self.index]
+    @value.setter
+    def value(self, val):
+        self[self.index] = val
 
     def __getitem__(self, i):
         if self.a_size < self.pointer.size:
