@@ -1,21 +1,23 @@
 #include <stdio.h>
 int main(){
-  /*int g[] = {1, 2};
-  g[0] = 3;
-  double test = 1.9;
-  int e = 1;
-  e = test + e;
-  */
-  int a = 0x11223344;
-  int * b = &a;
-  char * c =  b;
-  short * d = b;
-  printf("%c\n", c[0]);
-  printf("%hi\n", *d);
-  char * e = "heyy";
-  printf("%d\n", e[0]);
-  printf("%c\n", (char) e[0]);
-  int f = 1.5;
-  printf("%d\n", f);
-  printf("%lf\n", f);
+  int a[3] = {0x41424344, 0x45464748, 0x494a4b4c};
+  for(int i = 0; i < 2; i++)
+    printf("%d-", a[i]);
+  printf("%d\n", a[2]);
+
+  printf("IMPLICIT CAST TIME\n");
+  char * d =  a;
+  for(int i = 0; i < 11; i++)
+    printf("%d-", d[i]);
+  printf("%d\n", d[11]);
+
+  printf("EXPLICIT CAST TIME\n");
+  char * c = (char*) a;
+  for(int i = 0; i < 11; i++)
+    printf("%d-", c[i]);
+  printf("%d\n", c[11]);
+
+  printf("\n");
+  
+
 }

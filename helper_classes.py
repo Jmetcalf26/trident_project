@@ -9,17 +9,21 @@ class Deref:
     def __init__(self, pointer, index=0):
         self.pointer = pointer + index
     def get_value(self):
-        return self.pointer.get_value()
+        return self.pointer.value
     def get_pointer(self):
         return self.pointer
     def __add__(self, a):
-        return self.get_value() + a
+        return variable(self.value + a)
     def __radd__(self, a):
-        return self.get_value() + a
+        return variable(self.value + a)
     def __int__(self):
-        return self.get_value()
+        return self.value
     def __index__(self):
         return self.__int__()
+    def __getitem__(self, i):
+        return self.pointer[i]
+    def __setitem__(self, i, a):
+        self.pointer[i] = a
 
     @property
     def value(self):
@@ -67,6 +71,7 @@ class Pointer:
     def __getitem__(self, i):
         return self.array[i]
     def __setitem__(self, i, a):
+        print(self.array)
         self.array[i] = a
     def __str__(self):
         if self.size == 1:
@@ -161,4 +166,7 @@ class Pointer_alias:
 
 def variable(a, index=0, size=1):
     #print(a, index, size)
-    return Deref(Pointer([a], 0, size), index)
+    if not isinstance(a, list):
+        return Deref(Pointer([a], 0, size), index)
+    else:
+        return Deref(Pointer(a, 0, size), index)

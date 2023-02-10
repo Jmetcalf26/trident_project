@@ -1,18 +1,11 @@
-// Another example program to demonstrate working
-// of enum in C
-
-int foo(char);
-int bar(char c){
-
-}
-int (*bazz) (char) = bar;
+#include <stdio.h>
 int main(){
+	int i = 1;
+	int k = i + 1;
+	int l = k + 1;
 
-	foo('c');
-	bar('c');
-	bazz('c');
-	bingo('c');
-	bazz = bar;
+	printf("%d\n", k);
+	printf("%d\n", l);
 }
 
 

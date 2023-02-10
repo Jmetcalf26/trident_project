@@ -7,6 +7,7 @@ from helper_functions import *
 from ast import *
 import sys
 l_values = [CursorKind.DECL_REF_EXPR, CursorKind.ARRAY_SUBSCRIPT_EXPR, CursorKind.UNARY_OPERATOR]
+array_values = [TypeKind.CONSTANTARRAY, TypeKind.VARIABLEARRAY, TypeKind.DEPENDENTSIZEDARRAY, TypeKind.INCOMPLETEARRAY]
 
 def debug(x):
     global y
@@ -48,7 +49,6 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
         return
-
     if nt == "STRUCT_DECL":
         print_node_info(n)
         node = ClassDef(n.spelling, [Name(c.spelling) for c in children], [], [Pass()], [])
@@ -161,13 +161,8 @@ def create_ast_node(n, name_opt=Load()):
             print("variable array")
             node = Assign([Name(n.spelling, Store())], 
                           Call(Name('variable'),
-                               [Call(Name('Pointer', Load()), 
-                                     [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0])),
-                                      Constant(0), 
-                                      Constant(n.type.element_type.get_size())],
-                                     [])],
-                               [keyword('size', Constant(8))]
-                               ))
+                               [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0]))],
+                               [keyword('size', Constant(n.type.element_type.get_size()))]))
 
         elif get_type(n) == "CONSTANTARRAY":
             print("constant array")
@@ -194,13 +189,8 @@ def create_ast_node(n, name_opt=Load()):
 
             node = Assign([Name(n.spelling, Store())], 
                           Call(Name('variable'),
-                               [Call(Name('Pointer', Load()),
-                                     [array,
-                                      Constant(0), 
-                                      Constant(n.type.element_type.get_size())],
-                                     [])], 
-                               [keyword('size', Constant(8))]
-                               ))
+                               [array],
+                               [keyword('size', Constant(n.type.element_type.get_size()))]))
 
         elif get_type(n) == "RECORD":
             print_type_info(n.type)
@@ -212,7 +202,10 @@ def create_ast_node(n, name_opt=Load()):
         #elif get_type(n) == "POINTER":
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
         elif len(children) < 1:
-            node = Assign([Name(n.spelling, Store())], Constant(None))
+            node = Assign([Name(n.spelling, Store())],
+                          Call(Name('variable'),
+                               [Constant(None)], 
+                               []))
         else:
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
             node = Assign([Name(n.spelling, Store())],
@@ -280,14 +273,21 @@ def create_ast_node(n, name_opt=Load()):
         
         #extended_node_info(n)
 
-        # FUNCTION CALL
+        # FUNCTION CALL <FunctionToPointerDecay>
         if n.referenced is not None and n.referenced.kind == CursorKind.FUNCTION_DECL:
             node = create_ast_node(children[0])
-        # L-VALUE TO R-VALUE
+
+        # ARRAY TO POINTER <ArrayToPointerDecay>
+        elif n.type.get_canonical().kind == TypeKind.POINTER and children[0].type.get_canonical().kind in array_values:
+            node = create_ast_node(children[0])
+
+        # L-VALUE TO R-VALUE <LValueToRValue>
         elif children[0].kind in l_values:
             node = Attribute(create_ast_node(children[0]), 'value', Load())
+        
+        #elif 
+
         # IMPLICIT CAST TYPE 1
-        #elif children[0].kind == CursorKind.UNEXPOSED_EXPR:
         else:
             print("implicit cast")
             casted_type = n.type.kind
@@ -348,7 +348,6 @@ def create_ast_node(n, name_opt=Load()):
         node = Call([], [], [])
         node.func = create_ast_node(children[0])
         node.args = [c for c in create_expr_list(children[1:])]
-        #node.args = create_expr_list(children[1:])
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")

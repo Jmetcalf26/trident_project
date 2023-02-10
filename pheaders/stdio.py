@@ -287,6 +287,7 @@ def fscanf(stream, fmt, *args):
                 raise ValueError("not enough destinations for scanf") from None
             if isinstance(rhs, list):
                 for i in range(len(rhs)):
+                    print("rhs[i]", rhs[i])
                     dest[i] = rhs[i]
             else:
                 dest = rhs
