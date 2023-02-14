@@ -205,7 +205,7 @@ def create_ast_node(n, name_opt=Load()):
             node = Assign([Name(n.spelling, Store())],
                           Call(Name('variable'),
                                [Constant(None)], 
-                               []))
+                               [keyword('size', Constant(n.type.get_size()))]))
         else:
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
             node = Assign([Name(n.spelling, Store())],
@@ -274,18 +274,13 @@ def create_ast_node(n, name_opt=Load()):
         #extended_node_info(n)
 
         # FUNCTION CALL <FunctionToPointerDecay>
-        if n.referenced is not None and n.referenced.kind == CursorKind.FUNCTION_DECL:
-            node = create_ast_node(children[0])
-
         # ARRAY TO POINTER <ArrayToPointerDecay>
-        elif n.type.get_canonical().kind == TypeKind.POINTER and children[0].type.get_canonical().kind in array_values:
+        if is_FunctionToPointerDecay(n) or is_ArrayToPointerDecay(n):
             node = create_ast_node(children[0])
 
         # L-VALUE TO R-VALUE <LValueToRValue>
-        elif children[0].kind in l_values:
+        elif is_LValueToRValue(n):
             node = Attribute(create_ast_node(children[0]), 'value', Load())
-        
-        #elif 
 
         # IMPLICIT CAST TYPE 1
         else:
@@ -347,7 +342,15 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         node = Call([], [], [])
         node.func = create_ast_node(children[0])
-        node.args = [c for c in create_expr_list(children[1:])]
+        for c in children[1:]:
+            print('shnilda')
+            if not is_ArrayToPointerDecay(c) and is_LValueToRValue(c):
+                node.args.append(Call(Name('variable'), 
+                                      [create_ast_node(c)],
+                                      [keyword('size', Constant(c.type.get_size()))]))
+            else:
+                node.args.append(create_ast_node(c))
+       #node.args = [c for c in create_expr_list(children[1:])]
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")

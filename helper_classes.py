@@ -6,8 +6,11 @@ class Trigger:
         return Pointer(a, 0, 1)
 
 class Deref:
-    def __init__(self, pointer, index=0):
-        self.pointer = pointer + index
+    def __init__(self, dorp, index=0):
+        if isinstance(dorp, Deref):
+            self.pointer = dorp.pointer + index
+        else:
+            self.pointer = dorp + index
     def get_value(self):
         return self.pointer.value
     def get_pointer(self):
@@ -24,6 +27,8 @@ class Deref:
         return self.pointer[i]
     def __setitem__(self, i, a):
         self.pointer[i] = a
+    #def __str__(self):
+        #return "deref of: " + str(self.pointer)
 
     @property
     def value(self):
@@ -37,9 +42,11 @@ class Pointer:
     def __init__(self, array, index, size, memory_loc=None):
         #print(array, index, size)
         global memory_counter
+        self.str = False
         if isinstance(array, str):
             array = list(map(ord, array))
             array.append(0)
+            self.str = True
         self.array = array
         self.index = index
         #print('index', index)
@@ -57,6 +64,10 @@ class Pointer:
     @property
     def value(self):
         #print(self.array, self.index)
+        if self.size == 1:
+            #return ''.join(chr(x) for x in self.array[:len(self.array)])
+            return ''.join(chr(x) for x in self.array[:self.array.index(0)])
+
         return self.array[self.index]
     @value.setter
     def value(self, val):
@@ -71,7 +82,7 @@ class Pointer:
     def __getitem__(self, i):
         return self.array[i]
     def __setitem__(self, i, a):
-        print(self.array)
+        #print(self.array)
         self.array[i] = a
     def __str__(self):
         if self.size == 1:
@@ -81,8 +92,8 @@ class Pointer:
                 raise ValueError("No null byte in string") from None
             return ''.join(chr(x) for x in self.array[:null_byte])
         else:
-            
-            raise NotImplementedError("need pointer alias for string conversion")
+            return str(self.array)+ " " + str(self.index) + " " + str(self.size)
+            #raise NotImplementedError("need pointer alias for string conversion")
 
     def __int__(self):
         return self.memory_loc + self.index * self.size
@@ -90,11 +101,14 @@ class Pointer:
         return self.__int__()
 
 class Pointer_alias:
-    def __init__(self, pointer, a_size, index=-1):
-        self.pointer = pointer
+    def __init__(self, dorp, a_size, index=-1):
+        if isinstance(dorp, Deref):
+            self.pointer = dorp.pointer
+        else:
+            self.pointer = dorp
         self.a_size = a_size
         if index == -1:
-            self.index = self.pointer.index * pointer.size // a_size
+            self.index = self.pointer.index * self.pointer.size // a_size
         else:
             self.index = index
     def __str__(self):
@@ -146,17 +160,7 @@ class Pointer_alias:
             self.pointer[oi] ^= j << shift_amt
         elif self.a_size > self.pointer.size:
             pass
-    # UPDATE THIS
-    # def __setattr__(self, name, value):
-    #     if name == 'value':
-    #         self.pointer.array[self.index] = value
-    #     else:
-    #         super().__setattr__(name, value)
-    # def __getattribute__(self, name):
-    #     if name == 'value':
-    #         return self.pointer.array[self.index]
-    #     else:
-    #         super().__getattribute__(name)
+
     def __int__(self):
         return self.pointer.memory_loc
     def __index__(self):

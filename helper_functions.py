@@ -1,6 +1,18 @@
 from ast import *
 from enum import Enum
-from clang.cindex import TypeKind
+from clang.cindex import TypeKind, CursorKind
+
+
+def is_LValueToRValue(node):
+    l_values = [CursorKind.DECL_REF_EXPR, CursorKind.ARRAY_SUBSCRIPT_EXPR, CursorKind.UNARY_OPERATOR]
+    return list(node.get_children())[0].kind in l_values
+def is_FunctionToPointerDecay(node):
+    return node.referenced is not None and node.referenced.kind == CursorKind.FUNCTION_DECL
+def is_ArrayToPointerDecay(node):
+    array_values = [TypeKind.CONSTANTARRAY, TypeKind.VARIABLEARRAY, TypeKind.DEPENDENTSIZEDARRAY, TypeKind.INCOMPLETEARRAY]
+    return node.type.get_canonical().kind == TypeKind.POINTER and list(node.get_children())[0].type.get_canonical().kind in array_values
+
+ 
 
 def bin(a):
     print("{0:b}".format(a))
@@ -146,9 +158,9 @@ def translate_operator(operator, lhs_cat=TypeCat.UNKNOWN, rhs_cat=TypeCat.UNKNOW
         op = Mult()
     elif operator == '/':
         if lhs_cat is TypeCat.FLOATING or rhs_cat is TypeCat.FLOATING:
-            op = Div()
-        else:
             op = FloorDiv()
+        else:
+            op = Div()
     # THIS WILL NEVER BE REACHED BECAUSE THERE IS NONE OF THIS IN C, ADD CHECK TO SEE IF BOTH SIDES ARE INTS TO USE THIS!
     # (done - see above)
     elif operator == '//':
