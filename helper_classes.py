@@ -3,14 +3,14 @@ from helper_functions import *
 memory_counter = 16
 class Trigger:
     def __or__(self, a):
-        return Pointer(a, 0, 1)
+        return Pointer(a, 0, 1, string=True)
 
 class Deref:
     def __init__(self, dorp, index=0):
-        if isinstance(dorp, Deref):
-            self.pointer = dorp.pointer + index
-        else:
-            self.pointer = dorp + index
+        #if isinstance(dorp, Deref):
+            #self.pointer = dorp.pointer + index
+        #else:
+        self.pointer = dorp + index
     def get_value(self):
         return self.pointer.value
     def get_pointer(self):
@@ -39,14 +39,14 @@ class Deref:
         self.pointer.value = val
 
 class Pointer:
-    def __init__(self, array, index, size, memory_loc=None):
+    def __init__(self, array, index, size, memory_loc=None, string=False):
         #print(array, index, size)
         global memory_counter
-        self.str = False
-        if isinstance(array, str):
+        self.string = string
+        #if isinstance(array, str):
+        if string:
             array = list(map(ord, array))
             array.append(0)
-            self.str = True
         self.array = array
         self.index = index
         #print('index', index)
@@ -64,11 +64,20 @@ class Pointer:
     @property
     def value(self):
         #print(self.array, self.index)
-        if self.size == 1:
+        #if self.size == 1:
             #return ''.join(chr(x) for x in self.array[:len(self.array)])
-            return ''.join(chr(x) for x in self.array[:self.array.index(0)])
+            #return ''.join(chr(x) for x in self.array[:self.array.index(0)])
 
-        return self.array[self.index]
+        if self.string:
+            print('wooohoo')
+            try:
+                null_byte = self.array.index(0)
+            except ValueError:
+                raise ValueError("No null byte in string") from None
+            
+            return ''.join(chr(x) for x in self.array[:null_byte])
+        else:
+            return self.array[self.index]
     @value.setter
     def value(self, val):
         self.array[self.index] = val
@@ -85,7 +94,8 @@ class Pointer:
         #print(self.array)
         self.array[i] = a
     def __str__(self):
-        if self.size == 1:
+        print('SNILDA', self.string)
+        if self.string:
             try:
                 null_byte = self.array.index(0)
             except ValueError:
@@ -102,10 +112,10 @@ class Pointer:
 
 class Pointer_alias:
     def __init__(self, dorp, a_size, index=-1):
-        if isinstance(dorp, Deref):
-            self.pointer = dorp.pointer
-        else:
-            self.pointer = dorp
+        #if isinstance(dorp, Deref):
+            #self.pointer = dorp.pointer
+        #else:
+        self.pointer = dorp
         self.a_size = a_size
         if index == -1:
             self.index = self.pointer.index * self.pointer.size // a_size

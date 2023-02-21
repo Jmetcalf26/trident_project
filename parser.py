@@ -189,8 +189,8 @@ def create_ast_node(n, name_opt=Load()):
 
             node = Assign([Name(n.spelling, Store())], 
                           Call(Name('variable'),
-                               [array],
-                               [keyword('size', Constant(n.type.element_type.get_size()))]))
+                               [Call(Name('Pointer'), [array, Constant(0), Constant(n.type.element_type.get_size())], [])],
+                               [keyword('size', Constant(8))]))
 
         elif get_type(n) == "RECORD":
             print_type_info(n.type)
@@ -274,12 +274,16 @@ def create_ast_node(n, name_opt=Load()):
         #extended_node_info(n)
 
         # FUNCTION CALL <FunctionToPointerDecay>
-        # ARRAY TO POINTER <ArrayToPointerDecay>
-        if is_FunctionToPointerDecay(n) or is_ArrayToPointerDecay(n):
+        # CONST CHAR TO CHAR <NoOp>
+        if is_FunctionToPointerDecay(n) or is_NoOp(n):
             node = create_ast_node(children[0])
 
         # L-VALUE TO R-VALUE <LValueToRValue>
         elif is_LValueToRValue(n):
+            node = Attribute(create_ast_node(children[0]), 'value', Load())
+
+        # ARRAY TO POINTER <ArrayToPointerDecay>
+        elif is_ArrayToPointerDecay(n) and children[0].kind == CursorKind.UNEXPOSED_EXPR:
             node = Attribute(create_ast_node(children[0]), 'value', Load())
 
         # IMPLICIT CAST TYPE 1
@@ -342,15 +346,7 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         node = Call([], [], [])
         node.func = create_ast_node(children[0])
-        for c in children[1:]:
-            print('shnilda')
-            if not is_ArrayToPointerDecay(c) and is_LValueToRValue(c):
-                node.args.append(Call(Name('variable'), 
-                                      [create_ast_node(c)],
-                                      [keyword('size', Constant(c.type.get_size()))]))
-            else:
-                node.args.append(create_ast_node(c))
-       #node.args = [c for c in create_expr_list(children[1:])]
+        node.args = [c for c in create_expr_list(children[1:])]
 
     if nt == "UNARY_OPERATOR":
         print("creating a new unary op...")
@@ -358,16 +354,15 @@ def create_ast_node(n, name_opt=Load()):
         print("get_num_template_arguments():", n.get_num_template_arguments())
         operator = tokens[0]
         print("operator:", operator)
-        # LOOK AT THIS, THE WAY THAT THE TOKEN IS BEING REFERENCED BREAKS FOR ARRAYS
+
         if operator == '&':
             size = n.type.get_pointee().get_size()
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
                 size = n.type.get_pointee().get_array_element_type().get_size()
-
-            node = Attribute(create_ast_node(children[0]), 'pointer', Load())
             #else:
-            #    print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
-            #    sys.exit(1)
+                #print("UH OH, NEW TYPE HAS APPEARED FOR ADDRESSING (&)!")
+                #sys.exit(1)
+            node = Attribute(create_ast_node(children[0]), 'pointer', Load())
         elif operator == '*':
             node = Call(Name('Deref'), [create_ast_node(children[0])], [])
 
@@ -589,7 +584,13 @@ def create_ast_node(n, name_opt=Load()):
         node.args.args = create_expr_list(children[:num_args])
 
         # add a list of nodes for the body of the function, using the guaranteed compound statement as the last child to cut it out entirely
-        node.body = create_stmt_list(children[len(children)-1].get_children())
+        node.body = []
+        for c in children[:num_args]:
+            node.body.append(Assign([Name(c.spelling)], 
+                                    Call(Name('variable'), 
+                                         [Name(c.spelling)], 
+                                         [keyword('size', Constant(c.type.get_size()))])))
+        node.body.extend(create_stmt_list(children[len(children)-1].get_children()))
 
         # it does not need a returns, I'm not 100% sure why at this point but it just works without one.
     # ************************************** 

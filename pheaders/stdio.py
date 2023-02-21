@@ -293,7 +293,12 @@ def fscanf(stream, fmt, *args):
                 #print("rhs", rhs)
                 #print("dest", dest)
                 #print('dest.value', dest.value)
-                dest.value.value = rhs
+                print(type(dest))
+                print(type(dest.value))
+                if isinstance(dest.value, Deref):
+                    dest.value.value = rhs
+                else:
+                    dest.value = rhs
             nassign += 1
     else:
         if lastend != len(fstring):

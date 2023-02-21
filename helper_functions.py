@@ -11,7 +11,8 @@ def is_FunctionToPointerDecay(node):
 def is_ArrayToPointerDecay(node):
     array_values = [TypeKind.CONSTANTARRAY, TypeKind.VARIABLEARRAY, TypeKind.DEPENDENTSIZEDARRAY, TypeKind.INCOMPLETEARRAY]
     return node.type.get_canonical().kind == TypeKind.POINTER and list(node.get_children())[0].type.get_canonical().kind in array_values
-
+def is_NoOp(node):
+    return node.type.get_canonical().spelling == "const char *" and list(node.get_children())[0].type.get_canonical().spelling == "char *"
  
 
 def bin(a):

@@ -1,6 +1,10 @@
 #include <stdio.h>
+int booga(int i, int j, int k){
+return 1;
+}
 int main(){
   int a[3] = {0x41424344, 0x45464748, 0x494a4b4c};
+
   for(int i = 0; i < 2; i++)
     printf("%d-", a[i]);
   printf("%d\n", a[2]);
