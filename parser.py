@@ -48,14 +48,27 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
-        return
+        print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
+        try:
+            node = create_ast_node(children[[c.kind for c in children].index(CursorKind.STRUCT_DECL)])
+        except Exception:
+            return
     if nt == "STRUCT_DECL":
+
         print_node_info(n)
-        node = ClassDef(n.spelling, [Name(c.spelling) for c in children], [], [Pass()], [])
+        args = [arg(c.spelling) for c in children]
+        args.insert(0, arg('self'))
+        init = FunctionDef('__init__', arguments([], args, [], [], [], [], [Constant(0)]*(len(args)-1)), [], [])
+        init.body = [Assign([Attribute(Name('self'), c.spelling, Store())], Name(c.spelling)) for c in children]  
+
+        struct_name = n.displayname if n.displayname else n.type.get_canonical().spelling
+        node = ClassDef(struct_name, [], [], [init], [])
     if nt == "MEMBER_REF_EXPR":
         print_node_info(n)
         node = Attribute(create_ast_node(children[0]), Name(n.spelling))
     if nt == "TYPE_REF":
+        print('creating a new typeref...')
+        #print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
         print_node_info(n)
         return
 
@@ -151,11 +164,32 @@ def create_ast_node(n, name_opt=Load()):
         node = Module(create_stmt_list(children))
 
     if nt == "VAR_DECL":
+        try:
+            list_node = children[[c.kind for c in children].index(CursorKind.INIT_LIST_EXPR)]
+        except Exception:
+            list_node = None
+        try:
+            num_element_node = children[[c.kind for c in children].index(CursorKind.INTEGER_LITERAL)]
+        except Exception:
+            num_element_node = None
+        try:
+            type_ref_node = children[[c.kind for c in children].index(CursorKind.TYPE_REF)]
+        except Exception:
+            type_ref_node = None
+        print('NODES IN THE ARRAY')
+        if list_node:
+            print('list node', list_node.kind)
+        if num_element_node:
+            print('num_element_node', num_element_node.kind)
+        if type_ref_node:
+            print('type_ref_node', type_ref_node.kind)
         print_node_info(n)
         print("get_type(n)", get_type(n))
+
         if n.spelling == "id_like_to_see_someone_make_this_variable":
             print("making an import statement")
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
+
 
         elif get_type(n) == "VARIABLEARRAY":
             print("variable array")
@@ -163,38 +197,34 @@ def create_ast_node(n, name_opt=Load()):
                           Call(Name('variable'),
                                [BinOp(List([Constant(0)]), Mult(), create_ast_node(children[0]))],
                                [keyword('size', Constant(n.type.element_type.get_size()))]))
+            print('its time to pay the piper')
+            sys.exit(1)
 
         elif get_type(n) == "CONSTANTARRAY":
             print("constant array")
-            array_size = n.type.element_count
-            array_type = n.type.element_type
+            print('n.type', n.type.get_canonical().kind)
+            if type_ref_node:
+                array_size = n.type.get_canonical().element_count
+                array_type = n.type.get_canonical().element_type
+            else:
+                array_size = n.type.element_count
+                array_type = n.type.element_type
+            print('array_size', array_size)
+            print('array_type', array_type.kind)
+
             array = List([], Load())
-
-            if get_type(children[0]) == "INT":
-                print("integer")
-                if len(children) == 2:
-                    array = create_ast_node(children[1])
-            elif len(children) > 0:
-                array = create_ast_node(children[0])
-
+            if list_node:
+                array = create_ast_node(list_node)
             array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
-            # remnant from when everything was an array index
-            #node = Assign([Name(n.spelling, Store())], 
-            #              List([Call(Name('Pointer', Load()),
-            #                         [array,
-            #                          Constant(0), 
-            #                          Constant(n.type.element_type.get_size())],
-            #                         [])],
-            #                   Load()))
 
             node = Assign([Name(n.spelling, Store())], 
                           Call(Name('variable'),
-                               [Call(Name('Pointer'), [array, Constant(0), Constant(n.type.element_type.get_size())], [])],
+                               [Call(Name('Pointer'), [array, Constant(0), Constant(array_type.get_size())], [])],
                                [keyword('size', Constant(8))]))
 
+        # THIS MEANS STRUCT!
         elif get_type(n) == "RECORD":
-            print_type_info(n.type)
-            print("GIVE ME CAR:", n.type.get_declaration().spelling)
+            print("STRUCT MODE ACTIVATE")
             struct_name = n.type.get_declaration().spelling
             lhs = [Name(n.spelling, Store())]
             rhs = Call(Name(struct_name), create_expr_list(children[1:]), [])
@@ -208,6 +238,7 @@ def create_ast_node(n, name_opt=Load()):
                                [keyword('size', Constant(n.type.get_size()))]))
         else:
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
+            print(n.type.spelling, "whoo")
             node = Assign([Name(n.spelling, Store())],
                           Call(Name('variable'),
                                [create_ast_node(children[0])], 

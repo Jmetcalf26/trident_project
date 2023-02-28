@@ -48,6 +48,7 @@ def add_overflow_check(n, node):
     return node
 
 def print_node_info(n):
+    print("n.displayname", n.displayname)
     print("n.kind", n.kind)
     print("n.spelling", n.spelling)
     #if "ARRAY" in str(n.type.get_canonical().kind):

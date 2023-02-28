@@ -293,8 +293,6 @@ def fscanf(stream, fmt, *args):
                 #print("rhs", rhs)
                 #print("dest", dest)
                 #print('dest.value', dest.value)
-                print(type(dest))
-                print(type(dest.value))
                 if isinstance(dest.value, Deref):
                     dest.value.value = rhs
                 else:

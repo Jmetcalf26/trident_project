@@ -1,27 +1,39 @@
 #include <stdio.h>
-int booga(int i, int j, int k){
-return 1;
+
+typedef int NAME;
+
+struct booga{
+  int i;
+  char c;
+
+};
+
+typedef struct{
+  int i;
+  char c;
+}bringus;
+
+struct booga foo(){
+  struct booga a = {2, 'b'};
+  return a; 
 }
+
 int main(){
-  int a[3] = {0x41424344, 0x45464748, 0x494a4b4c};
+  NAME chuck[] = {1, 3, 4 };
+  struct booga d = foo();
+  bringus f = {1, 'A'};
+  printf("%x\n", d);
+  printf("%x\n", foo());
+  printf("%x\n", foo());
 
-  for(int i = 0; i < 2; i++)
-    printf("%d-", a[i]);
-  printf("%d\n", a[2]);
-
-  printf("IMPLICIT CAST TIME\n");
-  char * d =  a;
-  for(int i = 0; i < 11; i++)
-    printf("%d-", d[i]);
-  printf("%d\n", d[11]);
-
-  printf("EXPLICIT CAST TIME\n");
-  char * c = (char*) a;
-  for(int i = 0; i < 11; i++)
-    printf("%d-", c[i]);
-  printf("%d\n", c[11]);
-
-  printf("\n");
-  
-
+  int e = foo().i;
+  //foo().a = 3;
+  NAME jack[5] = {1, 2 };
+  NAME dan[] = {1, 2, 3};
+  struct booga a = {1, 'a'};
+  struct booga* c = &a;
+  int b = a.i;
+  printf("%c\n", a.c);
+  printf("%c\n", c->c);
+  printf("%d\n", b);
 }

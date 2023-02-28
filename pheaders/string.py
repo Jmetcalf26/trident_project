@@ -63,9 +63,9 @@ def strcpy(dest, src):
 
 def strcmp(comp1, comp2):
     scomp1 = str(comp1)
-    print(scomp1)
+    #print('scomp1', scomp1)
     scomp2 = str(comp2)
-    print(scomp2)
+    #print('scomp2', scomp2)
 
     if scomp1 == scomp2:
         return 0

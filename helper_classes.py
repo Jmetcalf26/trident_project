@@ -94,16 +94,9 @@ class Pointer:
         #print(self.array)
         self.array[i] = a
     def __str__(self):
-        print('SNILDA', self.string)
-        if self.string:
-            try:
-                null_byte = self.array.index(0)
-            except ValueError:
-                raise ValueError("No null byte in string") from None
-            return ''.join(chr(x) for x in self.array[:null_byte])
-        else:
-            return str(self.array)+ " " + str(self.index) + " " + str(self.size)
-            #raise NotImplementedError("need pointer alias for string conversion")
+        return str(Pointer_alias(self, 1, index=self.index))
+        #return str(self.array)+ " " + str(self.index) + " " + str(self.size)
+
 
     def __int__(self):
         return self.memory_loc + self.index * self.size
@@ -121,8 +114,17 @@ class Pointer_alias:
             self.index = self.pointer.index * self.pointer.size // a_size
         else:
             self.index = index
+
     def __str__(self):
-        return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
+        if self.a_size == 1:
+            ret = ''
+            for i in range(self.index, self.pointer.size * len(self.pointer.array)):
+                if self[i] == 0: break
+                ret += chr(self[i])
+            return ret
+        else:
+            return str(Pointer_alias(self.pointer, 1, index=self.index))
+        #return "index: " + str(self.index) + " a_size: " + str(self.a_size) + " data: " + ' '.join([str(i) for i in self.pointer.array])
 
     @property
     def value(self):
