@@ -49,20 +49,24 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
         print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
+        '''
         try:
             node = create_ast_node(children[[c.kind for c in children].index(CursorKind.STRUCT_DECL)])
         except Exception:
             return
+        '''
+        node = Assign([Name(n.spelling+'_TYPEDEF')], Constant(0))
     if nt == "STRUCT_DECL":
 
         print_node_info(n)
         args = [arg(c.spelling) for c in children]
         args.insert(0, arg('self'))
-        init = FunctionDef('__init__', arguments([], args, [], [], [], [], [Constant(0)]*(len(args)-1)), [], [])
+        init = FunctionDef('__init__', arguments(args=args, defaults=[Constant(0)]*(len(args)-1)), [], [])
         init.body = [Assign([Attribute(Name('self'), c.spelling, Store())], Name(c.spelling)) for c in children]  
 
         struct_name = n.displayname if n.displayname else n.type.get_canonical().spelling
         node = ClassDef(struct_name, [], [], [init], [])
+
     if nt == "MEMBER_REF_EXPR":
         print_node_info(n)
         node = Attribute(create_ast_node(children[0]), Name(n.spelling))
@@ -176,13 +180,15 @@ def create_ast_node(n, name_opt=Load()):
             type_ref_node = children[[c.kind for c in children].index(CursorKind.TYPE_REF)]
         except Exception:
             type_ref_node = None
-        print('NODES IN THE ARRAY')
+
+        print('NODES IN THE VAR_DECL')
         if list_node:
             print('list node', list_node.kind)
         if num_element_node:
             print('num_element_node', num_element_node.kind)
         if type_ref_node:
             print('type_ref_node', type_ref_node.kind)
+        print()
         print_node_info(n)
         print("get_type(n)", get_type(n))
 
@@ -227,8 +233,14 @@ def create_ast_node(n, name_opt=Load()):
             print("STRUCT MODE ACTIVATE")
             struct_name = n.type.get_declaration().spelling
             lhs = [Name(n.spelling, Store())]
-            rhs = Call(Name(struct_name), create_expr_list(children[1:]), [])
-            node = Assign(lhs, rhs)
+            if list_node:
+                rhs = Call(Name(struct_name), create_expr_list(list_node.get_children()), [])
+            else:
+                rhs = create_ast_node(children[-1])
+            node = Assign(lhs, 
+                          Call(Name('variable'),
+                               [rhs],
+                               [keyword('size', Constant(n.type.get_size()))]))
         #elif get_type(n) == "POINTER":
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
         elif len(children) < 1:
@@ -416,7 +428,7 @@ def create_ast_node(n, name_opt=Load()):
         elif operator in ['==', '!=', '<', '<=', '>', '>=']:
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
         elif operator == "=":
-            node = Assign([Attribute(create_ast_node(children[0], name_opt=Store()), 'value')], create_ast_node(children[1]))
+            node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
         else:
             print(get_type(children[0]), get_type(children[1]))
             print(children[0].type.get_size(), children[1].type.get_size())

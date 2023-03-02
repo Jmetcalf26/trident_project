@@ -27,6 +27,8 @@ class Deref:
         return self.pointer[i]
     def __setitem__(self, i, a):
         self.pointer[i] = a
+    def __getattr__(self, attr):
+        return self.value.__getattribute__(attr)
     #def __str__(self):
         #return "deref of: " + str(self.pointer)
 
