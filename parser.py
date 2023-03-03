@@ -130,6 +130,7 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
         print_node_info(n)
+        extended_node_info(n)
         # node = Call(Name('Data', Load()), [Constant(int(tokens[0])), Constant(n.type.get_size())], [])
         node = Constant(literal_eval(tokens[0]))
 
@@ -299,6 +300,8 @@ def create_ast_node(n, name_opt=Load()):
             node = Call(Name('int'), [create_ast_node(children[0])], [])
         
         if get_type(n) == "CHAR_S":
+            node = Call(Name('chr'), [create_ast_node(children[0])], [])
+        if get_type(n) == "UCHAR":
             node = Call(Name('chr'), [create_ast_node(children[0])], [])
         if get_type(n) == "POINTER":
             stars()

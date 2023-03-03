@@ -23,7 +23,7 @@ if len(sys.argv) > 1:
 try:
     #tu = index.parse(filename, args=['-Iheaders'])
     #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
-    tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+    tu = index.parse(filename, args=['-I../headers'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
     print("Invalid filename")
     exit(1)
@@ -35,6 +35,13 @@ STRICT_TYPING = False
 if len(sys.argv) > 1:
     if sys.argv[1] == '--strict-typing' or sys.argv[1] == '-s':
         STRICT_TYPING = True
+stars()
+print("DIAGNOSTICS REPORT:")
+diag = tu.diagnostics
+for i in diag:
+    print(i)
+stars()
+
 stars()
 print("C AST:")
 print_c_ast(root, 0)
@@ -71,12 +78,6 @@ for i in range(len(root_ast.body)):
 print(dump(root_ast, indent=4))
 stars()
 
-stars()
-print("DIAGNOSTICS REPORT:")
-diag = tu.diagnostics
-for i in diag:
-    print(i)
-stars()
 
 stars()
 print("RESULTING PYTHON CODE FROM C CODE:")

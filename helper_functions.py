@@ -233,7 +233,9 @@ def print_c_ast(n, depth):
     if nt == "MACRO_DEFINITION":
         return
     print((' '*depth) + nt, end=' ')
-    print("|".join(t.spelling for t in n.get_tokens()))
+    #print((' '*depth) + nt)
+    #print("|".join(t.spelling for t in n.get_tokens()))
+    print(n.spelling)
     # for t in n.get_tokens():
     #     print(t.spelling, end=' ')
     # print()

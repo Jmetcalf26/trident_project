@@ -29,6 +29,7 @@ class Deref:
         self.pointer[i] = a
     def __getattr__(self, attr):
         return self.value.__getattribute__(attr)
+        
     #def __str__(self):
         #return "deref of: " + str(self.pointer)
 
