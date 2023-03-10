@@ -18,7 +18,10 @@ switch_counter = 0
 switch_stack = []
 
 def create_stmt_list(node_list):
-    return [force_stmt(create_ast_node(n)) for n in node_list]
+    stmt_list = [force_stmt(create_ast_node(n)) for n in node_list]
+    if not stmt_list:
+        return [Pass()]
+    return stmt_list
 def create_expr_list(node_list):
     return [create_ast_node(n) for n in node_list]
 
@@ -74,6 +77,7 @@ def create_ast_node(n, name_opt=Load()):
         print('creating a new typeref...')
         #print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
         print_node_info(n)
+        extended_node_info(n)
         return
 
     # *************************************** 
@@ -85,11 +89,11 @@ def create_ast_node(n, name_opt=Load()):
     # ************ PREPROCESSING ************ 
     # *************************************** 
     if nt == "INCLUSION_DIRECTIVE":
-        if n.kind.is_preprocessing():
-            return
         print("creating a new Import statement...")
         print_node_info(n)
         extended_node_info(n)
+        if n.kind.is_preprocessing():
+            return
         return
     if nt == "MACRO_INSTANTIATION":
         if n.kind.is_preprocessing():
@@ -129,6 +133,8 @@ def create_ast_node(n, name_opt=Load()):
         
     if nt == "INTEGER_LITERAL":
         print("creating a new Constant...")
+        print([t.kind for t in list(n.get_tokens())])
+        #print([t.kind for t in list(n.get_tokens())])
         print_node_info(n)
         extended_node_info(n)
         # node = Call(Name('Data', Load()), [Constant(int(tokens[0])), Constant(n.type.get_size())], [])
@@ -191,6 +197,7 @@ def create_ast_node(n, name_opt=Load()):
             print('type_ref_node', type_ref_node.kind)
         print()
         print_node_info(n)
+        extended_node_info(n)
         print("get_type(n)", get_type(n))
 
         if n.spelling == "id_like_to_see_someone_make_this_variable":
@@ -274,10 +281,10 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new array index...")
         print_node_info(n)
         #node = Subscript(create_ast_node(children[0]), create_ast_node(children[1]))
-        node = Call(Name('Deref', Load()), 
+        node = Attribute(Call(Name('Deref', Load()), 
                     [create_ast_node(children[0]),
                      create_ast_node(children[1])],
-                    [])
+                    []), 'value', Load())
         
 
     if nt == "INIT_LIST_EXPR":
@@ -620,7 +627,6 @@ def create_ast_node(n, name_opt=Load()):
         node = FunctionDef(name_token, body=[], decorator_list=[])
         # get the number of arguments
         num_args = len(list(n.get_arguments()))
-
         # populate all of the argument arrays 
         node.args = add_args()
 

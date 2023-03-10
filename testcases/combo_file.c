@@ -269,6 +269,7 @@ void good1()
         char dest[DEST_SIZE];
         char *result;
         /* FIX: use fgets for bounded read from stdin*/
+        int i = 0;
         result = fgets(dest, DEST_SIZE, stdin);
         /* Verify return value */
         if (result == NULL)
