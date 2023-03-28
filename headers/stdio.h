@@ -1,8 +1,10 @@
 #ifndef _stdio_variables
 #define _stdio_variables
-int stdin = 0;
-int stdout = 1;
-int stderr = 2;
+void * custom_stdio_inclusion_START;
+extern void * stdin;
+extern void * stdout;
+extern void * stderr;
+void * custom_stdio_inclusion_END;
 #define _stdio_inclusion
 #endif
 //#define stdin 0

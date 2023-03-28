@@ -1,4 +1,4 @@
-from sys import *
+import sys
 from helper_functions import *
 memory_counter = 16
 class Trigger:

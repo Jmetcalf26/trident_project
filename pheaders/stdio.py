@@ -1,10 +1,10 @@
 import sys
 import re
-from helper_classes import Deref
+from helper_classes import Deref, variable
 EOF = -1
-stdout = sys.stdout.buffer
-stdin = sys.stdin.detach()
-stderr = sys.stderr.buffer
+stdout = variable(sys.stdout.buffer, size=8)
+stdin = variable(sys.stdin.detach(), size=8)
+stderr = variable(sys.stderr.buffer, size=8)
 
 def _fmode(mode):
     modes = str(mode)
@@ -181,6 +181,30 @@ _scanf_fmt = re.compile(r"""
         | (?P<space> \s+)
         | (?P<literal> .)
     """, re.VERBOSE | re.DOTALL)
+
+def gets(buf):
+    rdr = _Reader(stdin.value)
+    n = len(buf.array)
+    value = rdr.read(r'[^\n]', n-1)
+    nl = rdr.read(r'\n', 1)
+    for i, c in enumerate(value):
+        buf[i] = ord(c)
+    buf[len(value)] = 0
+    if len(value) == 0 and len(nl) == 0:
+        return Pointer(None, 1)
+    return buf
+
+def fgets(buf, n, stream):
+    rdr = _Reader(stream)
+    value = rdr.read(r'[^\n]', n-1)
+    if len(value) < n-1:
+        value += rdr.read(r'\n', 1)
+    for i, c in enumerate(value):
+        buf[i] = ord(c)
+    buf[len(value)] = 0
+    if len(value) == 0:
+        return Pointer(None, 1)
+    return buf
 
 def fscanf(stream, fmt, *args):
     rdr = _Reader(stream)

@@ -24,7 +24,6 @@ try:
     #tu = index.parse(filename, args=['-Iheaders'])
     #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
     #tu = index.parse(filename, args=['-I../headers'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
-    #tu = index.parse(filename, args=['-I../headers'])
     tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
     print("Invalid filename")

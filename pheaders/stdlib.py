@@ -1,8 +1,8 @@
 import random
 from helper_classes import *
-
 RAND_MAX = 2**32-1
 _rng = random.Random(0)
+NULL = variable(0, size=8)
 
 def srand(seed):
     _rng.seed(seed)

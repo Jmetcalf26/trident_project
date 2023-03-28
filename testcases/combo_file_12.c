@@ -181,46 +181,10 @@ int globalTrue = 1; /* true */
 int globalFalse = 0; /* false */
 int globalFive = 5; 
 
-/* define a bunch of these as empty functions so that if a test case forgets
-   to make their's statically scoped, we'll get a linker error */
-#ifdef OMITGOOD
-void good1() { }
-void good2() { }
-void good3() { }
-void good4() { }
-void good5() { }
-void good6() { }
-void good7() { }
-void good8() { }
-void good9() { }
-#endif
-/* shouldn't be used, but just in case */
-void bad1() { }
-void bad2() { }
-void bad3() { }
-void bad4() { }
-void bad5() { }
-void bad6() { }
-void bad7() { }
-void bad8() { }
-void bad9() { }
-
-/* define global argc and argv */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int globalArgc = 0;
-char** globalArgv = 0;
-
-#ifdef __cplusplus
-}
-#endif
 /* TEMPLATE GENERATED TESTCASE FILE
-Filename: CWE242_Use_of_Inherently_Dangerous_Function__basic_01.c
+Filename: CWE242_Use_of_Inherently_Dangerous_Function__basic_12.c
 Label Definition File: CWE242_Use_of_Inherently_Dangerous_Function__basic.label.xml
-Template File: point-flaw-01.tmpl.c
+Template File: point-flaw-12.tmpl.c
 */
 /*
  * @description
@@ -228,7 +192,7 @@ Template File: point-flaw-01.tmpl.c
  * Sinks:
  *    GoodSink: Use fgets() for bounded user input
  *    BadSink : Use gets() for user input
- * Flow Variant: 01 Baseline
+ * Flow Variant: 12 Control flow: if(globalReturnsTrueOrFalse())
  *
  * */
 
@@ -238,24 +202,45 @@ Template File: point-flaw-01.tmpl.c
 
 #ifndef OMITBAD
 
-void CWE242_Use_of_Inherently_Dangerous_Function__basic_01_bad()
+void CWE242_Use_of_Inherently_Dangerous_Function__basic_12_bad()
 {
+    if(globalReturnsTrueOrFalse())
     {
-        char dest[DEST_SIZE];
-        char *result;
-        /* FLAW: gets is inherently dangerous and cannot be used safely. */
-        /* INCIDENTAL CWE120 Buffer Overflow since gets is inherently dangerous and is
-         * an unbounded copy. */
-        result = gets(dest);
-        /* Verify return value */
-        if (result == NULL)
         {
-            /* error condition */
-            printLine("Error Condition: alter control flow to indicate action taken");
-            exit(1);
+            char dest[DEST_SIZE];
+            char *result;
+            /* FLAW: gets is inherently dangerous and cannot be used safely. */
+            /* INCIDENTAL CWE120 Buffer Overflow since gets is inherently dangerous and is
+             * an unbounded copy. */
+            result = gets(dest);
+            /* Verify return value */
+            if (result == NULL)
+            {
+                /* error condition */
+                printLine("Error Condition: alter control flow to indicate action taken");
+                exit(1);
+            }
+            dest[DEST_SIZE-1] = '\0';
+            printLine(dest);
         }
-        dest[DEST_SIZE-1] = '\0';
-        printLine(dest);
+    }
+    else
+    {
+        {
+            char dest[DEST_SIZE];
+            char *result;
+            /* FIX: use fgets for bounded read from stdin*/
+            result = fgets(dest, DEST_SIZE, stdin);
+            /* Verify return value */
+            if (result == NULL)
+            {
+                /* error condition */
+                printLine("Error Condition: alter control flow to indicate action taken");
+                exit(1);
+            }
+            dest[DEST_SIZE-1] = '\0';
+            printLine(dest);
+        }
     }
 }
 
@@ -263,27 +248,48 @@ void CWE242_Use_of_Inherently_Dangerous_Function__basic_01_bad()
 
 #ifndef OMITGOOD
 
-void good1()
+/* good1() uses the GoodSink on both sides of the "if" statement */
+static void good1()
 {
+    if(globalReturnsTrueOrFalse())
     {
-        char dest[DEST_SIZE];
-        char *result;
-        /* FIX: use fgets for bounded read from stdin*/
-        int i = 0;
-        result = fgets(dest, DEST_SIZE, stdin);
-        /* Verify return value */
-        if (result == NULL)
         {
-            /* error condition */
-            printLine("Error Condition: alter control flow to indicate action taken");
-            exit(1);
+            char dest[DEST_SIZE];
+            char *result;
+            /* FIX: use fgets for bounded read from stdin*/
+            result = fgets(dest, DEST_SIZE, stdin);
+            /* Verify return value */
+            if (result == NULL)
+            {
+                /* error condition */
+                printLine("Error Condition: alter control flow to indicate action taken");
+                exit(1);
+            }
+            dest[DEST_SIZE-1] = '\0';
+            printLine(dest);
         }
-        dest[DEST_SIZE-1] = '\0';
-        printLine(dest);
+    }
+    else
+    {
+        {
+            char dest[DEST_SIZE];
+            char *result;
+            /* FIX: use fgets for bounded read from stdin*/
+            result = fgets(dest, DEST_SIZE, stdin);
+            /* Verify return value */
+            if (result == NULL)
+            {
+                /* error condition */
+                printLine("Error Condition: alter control flow to indicate action taken");
+                exit(1);
+            }
+            dest[DEST_SIZE-1] = '\0';
+            printLine(dest);
+        }
     }
 }
 
-void CWE242_Use_of_Inherently_Dangerous_Function__basic_01_good()
+void CWE242_Use_of_Inherently_Dangerous_Function__basic_12_good()
 {
     good1();
 }
@@ -303,12 +309,12 @@ int main(int argc, char * argv[])
     srand( (unsigned)time(NULL) );
 #ifndef OMITGOOD
     printLine("Calling good()...");
-    CWE242_Use_of_Inherently_Dangerous_Function__basic_01_good();
+    CWE242_Use_of_Inherently_Dangerous_Function__basic_12_good();
     printLine("Finished good()");
 #endif /* OMITGOOD */
 #ifndef OMITBAD
     printLine("Calling bad()...");
-    CWE242_Use_of_Inherently_Dangerous_Function__basic_01_bad();
+    CWE242_Use_of_Inherently_Dangerous_Function__basic_12_bad();
     printLine("Finished bad()");
 #endif /* OMITBAD */
     return 0;

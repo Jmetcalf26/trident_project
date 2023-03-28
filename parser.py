@@ -5,7 +5,7 @@ from clang.cindex import TypeKind
 import astor
 from helper_functions import *
 from ast import *
-import sys
+import sys, re
 l_values = [CursorKind.DECL_REF_EXPR, CursorKind.ARRAY_SUBSCRIPT_EXPR, CursorKind.UNARY_OPERATOR]
 array_values = [TypeKind.CONSTANTARRAY, TypeKind.VARIABLEARRAY, TypeKind.DEPENDENTSIZEDARRAY, TypeKind.INCOMPLETEARRAY]
 
@@ -16,6 +16,7 @@ def debug(x):
 
 switch_counter = 0
 switch_stack = []
+IGNORE_NODES = False
 
 def create_stmt_list(node_list):
     stmt_list = [force_stmt(create_ast_node(n)) for n in node_list]
@@ -32,18 +33,32 @@ def force_stmt(n):
         return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
-    global switch_counter, switch_stack, STRICT_TYPING
+    global switch_counter, switch_stack, STRICT_TYPING, IGNORE_NODES
     global l_values
     # determine the type of node to create
     nt = str(n.kind)[11:]
     tokens = list((t.spelling for t in n.get_tokens()))
     children = list(n.get_children())
 
-    if not n.kind.is_preprocessing():
+    if n.spelling not in preprocessing:
         stars()
         print("IN CREATE AST NODE, I want to create a", nt) 
         print("|".join(t for t in tokens))
 
+    start_pattern = re.compile('custom_[a-z]*_inclusion_START')
+    end_pattern = re.compile('custom_[a-z]*_inclusion_END')
+    if bool(start_pattern.match(n.spelling)):
+        IGNORE_NODES = True
+    elif bool(end_pattern.match(n.spelling)):
+        IGNORE_NODES = False
+        print("IGNORE NODE MODE IS TURNED ON!")
+        stars()
+        return
+
+    if IGNORE_NODES:
+        print("IGNORE NODE MODE IS TURNED ON!")
+        stars()
+        return
     # *************************************** 
     # ******* CURRENTLY WORKING NODE ********
     # *************************************** 
@@ -59,6 +74,7 @@ def create_ast_node(n, name_opt=Load()):
             return
         '''
         node = Assign([Name(n.spelling+'_TYPEDEF')], Constant(0))
+
     if nt == "STRUCT_DECL":
 
         print_node_info(n)
@@ -73,11 +89,12 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "MEMBER_REF_EXPR":
         print_node_info(n)
         node = Attribute(create_ast_node(children[0]), Name(n.spelling))
+
     if nt == "TYPE_REF":
         print('creating a new typeref...')
         #print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
         print_node_info(n)
-        extended_node_info(n)
+        #extended_node_info(n)
         return
 
     # *************************************** 
@@ -91,19 +108,19 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "INCLUSION_DIRECTIVE":
         print("creating a new Import statement...")
         print_node_info(n)
-        extended_node_info(n)
         if n.kind.is_preprocessing():
             return
-        return
     if nt == "MACRO_INSTANTIATION":
         if n.kind.is_preprocessing():
             return
         print("creating a new macro instantiation...")
         print_node_info(n)
-        extended_node_info(n)
         return
 
     if nt == "MACRO_DEFINITION":
+        if tokens[0] in preprocessing:
+            return
+        print_node_info(n)
         if tokens[0] == "_stdio_inclusion":
             node = ImportFrom('pheaders.stdio', [alias(name='*')], 0)
         elif tokens[0] == "_stdlib_inclusion":
@@ -112,6 +129,8 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.string', [alias(name='*')], 0)
         elif tokens[0] == "_unistd_inclusion":
             node = ImportFrom('pheaders.unistd', [alias(name='*')], 0)
+        elif tokens[0] == "_time_inclusion":
+            node = ImportFrom('pheaders.time_py', [alias(name='*')], 0)
         else:
             return
     # *************************************** 
@@ -196,9 +215,9 @@ def create_ast_node(n, name_opt=Load()):
         if type_ref_node:
             print('type_ref_node', type_ref_node.kind)
         print()
+        print("get_type(n)", get_type(n))
         print_node_info(n)
         extended_node_info(n)
-        print("get_type(n)", get_type(n))
 
         if n.spelling == "id_like_to_see_someone_make_this_variable":
             print("making an import statement")
@@ -251,7 +270,7 @@ def create_ast_node(n, name_opt=Load()):
                                [keyword('size', Constant(n.type.get_size()))]))
         #elif get_type(n) == "POINTER":
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
-        elif len(children) < 1:
+        elif len(children) < 1 or (len(children) == 1 and type_ref_node):
             node = Assign([Name(n.spelling, Store())],
                           Call(Name('variable'),
                                [Constant(None)], 
@@ -259,9 +278,14 @@ def create_ast_node(n, name_opt=Load()):
         else:
             #node = Assign([Name(n.spelling, Store())], create_ast_node(children[0]))
             print(n.type.spelling, "whoo")
+            if type_ref_node:
+                child = create_ast_node(children[1])
+            else:
+                child = create_ast_node(children[0])
+
             node = Assign([Name(n.spelling, Store())],
                           Call(Name('variable'),
-                               [create_ast_node(children[0])], 
+                               [child], 
                                [keyword('size', Constant(children[0].type.get_size()))]))
         #if STRICT_TYPING:
             #node = add_overflow_check(n, node)
@@ -302,14 +326,16 @@ def create_ast_node(n, name_opt=Load()):
         print("creating a new cast...")
         print_node_info(n)
         print("n.type.get_align():", n.type.get_align())
+        print('type_num', n.type._kind_id)
         print(get_type(n))
-        if get_type(n) == "INT":
+
+        type_num = n.type._kind_id
+        if (type_num > 7 and type_num < 13) or (type_num > 15 and type_num < 24):
             node = Call(Name('int'), [create_ast_node(children[0])], [])
-        
-        if get_type(n) == "CHAR_S":
+
+        if (type_num > 3 and type_num < 8) or (type_num > 12 and type_num < 16):
             node = Call(Name('chr'), [create_ast_node(children[0])], [])
-        if get_type(n) == "UCHAR":
-            node = Call(Name('chr'), [create_ast_node(children[0])], [])
+
         if get_type(n) == "POINTER":
             stars()
             print("CHILD OF POINTER:")
@@ -350,7 +376,6 @@ def create_ast_node(n, name_opt=Load()):
                 print("pointer:")
                 casted_type = n.type.get_pointee().kind
                 original_type = children[0].type.get_pointee().kind
-
                 print("  outer (casted) unexposed type:", casted_type)
                 print("  inner (original) unexposed type:", original_type)
 
@@ -361,6 +386,9 @@ def create_ast_node(n, name_opt=Load()):
                     node = Call(Name('Pointer_alias', Load()), 
                                 [create_ast_node(children[0]), 
                                  Constant(n.type.get_pointee().get_size())], [])
+
+                if original_type == TypeKind.VOID:
+                    node = create_ast_node(children[0])
 
             # IMPLICIT VARIABLE CAST
             else:
@@ -633,18 +661,24 @@ def create_ast_node(n, name_opt=Load()):
         # create the child list
 
         # add a list of nodes for the arguments to the function
-        node.args.args = create_expr_list(children[:num_args])
+        args = []
+        for c in children:
+            if c.kind == CursorKind.PARM_DECL:
+                args.append(c)
+        node.args.args = create_expr_list(args)
+        node.args.defaults=[Constant(0)]*(len(args))
 
         # add a list of nodes for the body of the function, using the guaranteed compound statement as the last child to cut it out entirely
         node.body = []
-        for c in children[:num_args]:
+        for c in args:
             node.body.append(Assign([Name(c.spelling)], 
                                     Call(Name('variable'), 
                                          [Name(c.spelling)], 
                                          [keyword('size', Constant(c.type.get_size()))])))
         node.body.extend(create_stmt_list(children[len(children)-1].get_children()))
 
-        # it does not need a returns, I'm not 100% sure why at this point but it just works without one.
+    # it does not need a returns, I'm not 100% sure why at this point but it just works without one.
+
     # ************************************** 
     # ************************************** 
     # ************************************** 

@@ -1,5 +1,6 @@
 #ifndef _STD_TESTCASE_H
 #define _STD_TESTCASE_H
+#define INCLUDEMAIN
 
 /* This file exists in order to:
  * 1) Include lots of standardized headers in one place

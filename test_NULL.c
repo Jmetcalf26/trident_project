@@ -1,4 +1,5 @@
-void * NULL = 0;
+//void * NULL = 0;
+#include <stdlib.h>
 int main(){
 	int i;
 	if(i == NULL){
