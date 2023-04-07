@@ -24,6 +24,8 @@ def is_child(children, node_type):
             return True
     return False
             
+def sizeof(cute_little_decoration, size):
+    return size
 
 def add_overflow_check(n, node):
     stars()
@@ -260,7 +262,7 @@ def extended_node_info(n):
     print('n.is_mutable_field()', n.is_mutable_field())
     print('spelling:', n.spelling)
     print('raw_comment:', n.raw_comment)
-    print('result_type:', n.result_type)
+    print('result_type:', n.result_type.kind)
     print_type_info(n.result_type)
     print('mangled_name:', n.mangled_name)
     print('kind:', n.kind)
@@ -280,11 +282,46 @@ def print_type_info(typ):
     print('type information:', end='\n\t')
     print("kind:", typ.kind.spelling, end='\n\t')
     print("spelling:", typ.spelling, end='\n\t')
-    print("get_named_type():", typ.get_named_type(), end='\n\t')
+    print("get_named_type():", typ.get_named_type().kind, end='\n\t')
     print("get_fields():", typ.get_fields(), end='\n\t')
     print("get_result():", typ.get_result().kind.spelling, end='\n\t')
     print("get_class_type():", typ.get_class_type(), end='\n\t')
     print("get_array_size():", typ.get_array_size(), end='\n\t')
     print('get_declaration():', typ.get_declaration())
     print('-'*10, end='\n\t')
+    print()
 
+'''Gets the sizeof(type) for any built-in C type.
+
+Currently this works in the dirtiest way possible by compiling
+and running a small C program.
+
+This is VERY unsafe to use on arbitrary inputs because no attempt
+at sanitation is made.
+'''
+
+from distutils import ccompiler
+import tempfile
+import subprocess
+from pathlib import Path
+
+def csizeof(typstr):
+    '''Get the size in bytes of the C built-in type stated in the given string.
+
+    Example: csizeof('sizeof(unsigned short int)') returns 2
+
+    CAUTION: The input typestr will not be sanitized in any way. If you use
+    this on untrusted input, it is at your own peril.
+    '''
+    print('typestr:',typstr)
+    cc = ccompiler.new_compiler()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tdpath = Path(tmpdir)
+        csource = tdpath / 'getsizeof.c'
+        with open(csource, 'w') as csout:
+            print(f'int main() {{ return {typstr}; }}', file=csout)
+        objects = cc.compile([str(csource)], output_dir=str(tmpdir))
+        exename = cc.executable_filename('getsizeof')
+        cc.link_executable(objects=objects, output_progname=exename, output_dir=tmpdir)
+        proc = subprocess.run([tdpath / exename])
+    return proc.returncode

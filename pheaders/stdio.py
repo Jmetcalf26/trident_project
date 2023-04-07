@@ -184,14 +184,18 @@ _scanf_fmt = re.compile(r"""
 
 def gets(buf):
     rdr = _Reader(stdin.value)
-    n = len(buf.array)
-    value = rdr.read(r'[^\n]', n-1)
+    value = rdr.read(r'[^\n]')
     nl = rdr.read(r'\n', 1)
+
+    if len(value)+1 > len(buf.array):
+        buf.array.extend(0 for _ in range(len(value)+1-len(buf.array)))
+
     for i, c in enumerate(value):
         buf[i] = ord(c)
     buf[len(value)] = 0
     if len(value) == 0 and len(nl) == 0:
         return Pointer(None, 1)
+    print(buf.array)
     return buf
 
 def fgets(buf, n, stream):

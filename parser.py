@@ -33,8 +33,7 @@ def force_stmt(n):
         return Expr(n)
 
 def create_ast_node(n, name_opt=Load()):
-    global switch_counter, switch_stack, STRICT_TYPING, IGNORE_NODES
-    global l_values
+    global switch_counter, switch_stack, STRICT_TYPING, IGNORE_NODES, l_values
     # determine the type of node to create
     nt = str(n.kind)[11:]
     tokens = list((t.spelling for t in n.get_tokens()))
@@ -62,8 +61,21 @@ def create_ast_node(n, name_opt=Load()):
     # *************************************** 
     # ******* CURRENTLY WORKING NODE ********
     # *************************************** 
+    if nt == "CXX_UNARY_EXPR":
+        print_node_info(n)
+        extended_node_info(n)
 
-
+        if tokens[0] == 'sizeof':
+            if len(children) > 0:
+                size = children[0].type.get_size()
+                print("size:", size)
+                node = Call(Name('sizeof'), [create_ast_node(children[0]), Constant(size)], [])
+            else:
+                size = csizeof(' '.join(tokens))
+                op = tokens.index('(')+1
+                cp = tokens.index(')')
+                node = Call(Name('sizeof'), [Constant(' '.join(tokens[op:cp])), Constant(size)], [])
+        
     if nt == "TYPEDEF_DECL":
         print_node_info(n)
         print("n.underlying_typedef_type", n.underlying_typedef_type.kind)
@@ -131,6 +143,8 @@ def create_ast_node(n, name_opt=Load()):
             node = ImportFrom('pheaders.unistd', [alias(name='*')], 0)
         elif tokens[0] == "_time_inclusion":
             node = ImportFrom('pheaders.time_py', [alias(name='*')], 0)
+        elif tokens[0] == "_alloca_inclusion":
+            node = ImportFrom('pheaders.alloca', [alias(name='*')], 0)
         else:
             return
     # *************************************** 
@@ -397,19 +411,15 @@ def create_ast_node(n, name_opt=Load()):
                 # create a node that does the appropriate cast based on the differing sizes
                 if casted_type == original_type:
                     node = create_ast_node(children[0])
-                elif casted_type == TypeKind.INT:
-                    if original_type == TypeKind.CHAR_S:
+                elif casted_type in [TypeKind.INT, TypeKind.CHAR_S]:
+                    if original_type in [TypeKind.CHAR_S, TypeKind.INT]:
                         node = create_ast_node(children[0])
                     else:
                         node = Call(Name('int'), [create_ast_node(children[0])], [])
                 elif casted_type == TypeKind.DOUBLE or casted_type == TypeKind.FLOAT:
                     node = Call(Name('float'), [create_ast_node(children[0])], [])
-                elif casted_type == TypeKind.CHAR_S:
-                    node = Call(Name('chr'), [create_ast_node(children[0])], [])
                 else:
                     node = create_ast_node(children[0])
-        #else:
-            #node = create_ast_node(children[0])
 
 
 
@@ -458,8 +468,10 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "BINARY_OPERATOR":
         print("creating a new binary op...")
         print_node_info(n)
-        operator = tokens[len(list(children[0].get_tokens()))]
+
+        operator = n.binary_operator
         print("operator:", operator)
+        raise ValueError()
         if operator in ['||', '&&']:
             node = BoolOp(translate_operator(operator), create_expr_list(children))
 

@@ -146,6 +146,7 @@ class Pointer_alias:
                 oi = i // self.a_size
                 of = i %  self.a_size
             mask = (1 << 8*self.a_size) - 1
+            print(self.pointer.array[0].array)
             value = (self.pointer[oi] >> (of * 8 * self.a_size)) & mask
             return value
         elif self.a_size > self.pointer.size:
