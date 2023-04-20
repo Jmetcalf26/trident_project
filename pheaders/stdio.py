@@ -195,7 +195,6 @@ def gets(buf):
     buf[len(value)] = 0
     if len(value) == 0 and len(nl) == 0:
         return Pointer(None, 1)
-    print(buf.array)
     return buf
 
 def fgets(buf, n, stream):

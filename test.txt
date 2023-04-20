@@ -1,0 +1,23 @@
+
+
+**************************************************
+NODE TYPE: BINARY_OPERATOR
+TOKENS: company|-|25
+creating a new binary op...
+operator: BinaryOperator.Sub
+n.displayname -
+n.kind CursorKind.BINARY_OPERATOR
+n.spelling -
+get_canonical().spelling: int
+get_canonical().kind: TypeKind.INT
+get_size(): 4
+num_args: 0
+num_children: 2
+num_tokens: 3
+arguments: 
+children:
+  UNEXPOSED_EXPR company
+  INTEGER_LITERAL 
+
+**************************************************
+

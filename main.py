@@ -1,17 +1,17 @@
 #!/usr/bin/python3
-import clang.cindex
-from clang.cindex import CursorKind
-from clang.cindex import TypeKind
+import clang_lib.cindex
+from clang_lib.cindex import CursorKind
+from clang_lib.cindex import TypeKind
 import astor
 from helper_functions import *
 from parser import *
 from ast import *
 import sys
-
+import time
 
 # create the index
-index = clang.cindex.Index.create()
-# create the translation unit
+index = clang_lib.cindex.Index.create()
+BinaryOperator# create the translation unit
 filename = 'simple.c'
 if len(sys.argv) > 1:
     if '-i' in sys.argv:
@@ -24,7 +24,7 @@ try:
     #tu = index.parse(filename, args=['-Iheaders'])
     #tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
     #tu = index.parse(filename, args=['-I../headers'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
-    tu = index.parse(filename, args=['-Iheaders'], options=clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+    tu = index.parse(filename, args=['-Iheaders'], options=clang_lib.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 except:
     print("Invalid filename")
     exit(1)
@@ -87,11 +87,12 @@ output = astor.to_source(root_ast)
 stars()
 
 stars()
-#of_name = input("Enter filename to save output to, no file extension [press enter for default]: ")
-#if of_name == "":
-of_name = "output_file"
+if '-o' in sys.argv:
+    of_name = sys.argv[sys.argv.index('-o')+1]
+else:
+    of_name = "output_file"
 of = open(of_name+'.py', 'w')
 of.write(output)
-print("CODE SAVED TO " + of_name + ".py")
+print("CODE SAVED TO " + of_name + ".py", file=sys.stderr)
 stars()
 

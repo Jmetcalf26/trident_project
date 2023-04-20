@@ -1,7 +1,8 @@
 #!/usr/bin/python3
-import clang.cindex
-from clang.cindex import CursorKind
-from clang.cindex import TypeKind
+import clang_lib.cindex
+from clang_lib.cindex import CursorKind, TypeKind, BinaryOperator
+from clang_lib.cindex import TypeKind
+from clang_lib.cindex import BinaryOperator
 import astor
 from helper_functions import *
 from ast import *
@@ -41,7 +42,8 @@ def create_ast_node(n, name_opt=Load()):
 
     if n.spelling not in preprocessing:
         stars()
-        print("IN CREATE AST NODE, I want to create a", nt) 
+        print("NODE TYPE:", nt) 
+        print("TOKENS:", end=' ')
         print("|".join(t for t in tokens))
 
     start_pattern = re.compile('custom_[a-z]*_inclusion_START')
@@ -61,6 +63,9 @@ def create_ast_node(n, name_opt=Load()):
     # *************************************** 
     # ******* CURRENTLY WORKING NODE ********
     # *************************************** 
+    if nt == "NULL_STMT":
+        print_node_info(n)
+        return
     if nt == "CXX_UNARY_EXPR":
         print_node_info(n)
         extended_node_info(n)
@@ -215,11 +220,18 @@ def create_ast_node(n, name_opt=Load()):
         try:
             num_element_node = children[[c.kind for c in children].index(CursorKind.INTEGER_LITERAL)]
         except Exception:
-            num_element_node = None
+            try:
+                num_element_node = children[[c.kind for c in children].index(CursorKind.BINARY_OPERATOR)] 
+            except Exception:
+                num_element_node = None
         try:
             type_ref_node = children[[c.kind for c in children].index(CursorKind.TYPE_REF)]
         except Exception:
             type_ref_node = None
+        try:
+            string_node = children[[c.kind for c in children].index(CursorKind.STRING_LITERAL)]
+        except Exception:
+            string_node = None
 
         print('NODES IN THE VAR_DECL')
         if list_node:
@@ -231,7 +243,7 @@ def create_ast_node(n, name_opt=Load()):
         print()
         print("get_type(n)", get_type(n))
         print_node_info(n)
-        extended_node_info(n)
+        #extended_node_info(n)
 
         if n.spelling == "id_like_to_see_someone_make_this_variable":
             print("making an import statement")
@@ -262,12 +274,25 @@ def create_ast_node(n, name_opt=Load()):
             array = List([], Load())
             if list_node:
                 array = create_ast_node(list_node)
-            array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
+                array.elts.extend([Constant(0)] * (array_size - len(array.elts)))
+                node = Assign([Name(n.spelling, Store())], 
+                              Call(Name('variable'),
+                                   [Call(Name('Pointer'), 
+                                         [array, Constant(0), Constant(array_type.get_size())], [])],
+                                   [keyword('size', Constant(8))]))
+            elif string_node:
+                array = create_ast_node(string_node)
 
-            node = Assign([Name(n.spelling, Store())], 
-                          Call(Name('variable'),
-                               [Call(Name('Pointer'), [array, Constant(0), Constant(array_type.get_size())], [])],
-                               [keyword('size', Constant(8))]))
+                node = Assign([Name(n.spelling, Store())], 
+                              Call(Name('variable'),
+                                   [array],
+                                   [keyword('size', Constant(8))]))
+            else:
+                node = Assign([Name(n.spelling, Store())], 
+                              Call(Name('variable'),
+                                   [Call(Name('Pointer'), 
+                                         [BinOp(List([Constant(0)]), Mult(), create_ast_node(num_element_node)), Constant(0), Constant(array_type.get_size())], [])],
+                                   [keyword('size', Constant(8))]))
 
         # THIS MEANS STRUCT!
         elif get_type(n) == "RECORD":
@@ -323,6 +348,10 @@ def create_ast_node(n, name_opt=Load()):
                     [create_ast_node(children[0]),
                      create_ast_node(children[1])],
                     []), 'value', Load())
+        node = Call(Name('Deref', Load()), 
+                    [create_ast_node(children[0]),
+                     create_ast_node(children[1])],
+                    [])
         
 
     if nt == "INIT_LIST_EXPR":
@@ -361,7 +390,7 @@ def create_ast_node(n, name_opt=Load()):
     if nt == "UNEXPOSED_EXPR":
         print("creating a new UNEXPOSED_EXPR...")
         print_node_info(n)
-        print('smelvin', children[0].kind)
+        #print('smelvin', children[0].kind)
         #child = create_ast_node(children[0])
         
         #extended_node_info(n)
@@ -377,6 +406,7 @@ def create_ast_node(n, name_opt=Load()):
 
         # ARRAY TO POINTER <ArrayToPointerDecay>
         elif is_ArrayToPointerDecay(n) and children[0].kind == CursorKind.UNEXPOSED_EXPR:
+            print("WOAH DUDE!")
             node = Attribute(create_ast_node(children[0]), 'value', Load())
 
         # IMPLICIT CAST TYPE 1
@@ -444,8 +474,8 @@ def create_ast_node(n, name_opt=Load()):
         print_node_info(n)
         print("get_num_template_arguments():", n.get_num_template_arguments())
         operator = tokens[0]
-        print("operator:", operator)
 
+        print("operator:", operator)
         if operator == '&':
             size = n.type.get_pointee().get_size()
             if n.type.get_pointee().kind == TypeKind.CONSTANTARRAY:
@@ -467,21 +497,22 @@ def create_ast_node(n, name_opt=Load()):
 
     if nt == "BINARY_OPERATOR":
         print("creating a new binary op...")
-        print_node_info(n)
-
         operator = n.binary_operator
         print("operator:", operator)
-        raise ValueError()
-        if operator in ['||', '&&']:
+        print_node_info(n)
+
+        #raise ValueError()
+        if operator.value == 19 or operator.value == 20 :
             node = BoolOp(translate_operator(operator), create_expr_list(children))
 
-        elif operator in ['==', '!=', '<', '<=', '>', '>=']:
+        elif operator.value in range(10, 16):
             node = Compare(create_ast_node(children[0]), [translate_operator(operator)], [create_ast_node(children[1])])
-        elif operator == "=":
-            node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
+        elif operator.value == 21:
+            #node = Assign([create_ast_node(children[0], name_opt=Store())], create_ast_node(children[1]))
+            node = Assign([Attribute(create_ast_node(children[0], name_opt=Store()), 'value')], create_ast_node(children[1]))
         else:
-            print(get_type(children[0]), get_type(children[1]))
-            print(children[0].type.get_size(), children[1].type.get_size())
+            #print('types of children:', get_type(children[0]), get_type(children[1]))
+            #print('sizeschildren[0].type.get_size(), children[1].type.get_size())
             # overflow = check_for_int_error(operator, children)
             # print(overflow)
             ltc, rtc = map(type_category,children)

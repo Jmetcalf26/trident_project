@@ -4306,7 +4306,7 @@ class Config(object):
             print(Config.library_path)
             file = Config.library_path + '/' + file
 
-        file = '/home/mids/m234158/llvm-project/build/lib/libclang.so'
+        file = '/home/mids/m234158/trident_project/clang_lib/CUSTOM_libclang.so'
         return file
 
     def get_cindex_library(self):

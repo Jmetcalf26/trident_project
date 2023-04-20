@@ -56,6 +56,8 @@ def toupper(ch):
 
 def strcpy(dest, src):
     i = 0
+    print("dest:", dest, "\nsrc:", src)
+    print(type(dest))
     while src[i] != 0:
         dest[i] = src[i]
         i+=1

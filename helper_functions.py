@@ -1,6 +1,6 @@
 from ast import *
 from enum import Enum
-from clang.cindex import TypeKind, CursorKind
+from clang.cindex import TypeKind, CursorKind, BinaryOperator
 
 
 def is_LValueToRValue(node):
@@ -57,17 +57,17 @@ def print_node_info(n):
     #print('element_type:', n.type.element_type.spelling)
     #print('element_type size:', n.type.element_type.get_size())
     #print('element_count:', n.type.element_count)
-    print('get_array_element_type:', n.type.get_array_element_type().spelling)
-    print('get_array_element_type size:', n.type.get_array_element_type().get_size())
+    #print('get_array_element_type:', n.type.get_array_element_type().spelling)
+    #print('get_array_element_type size:', n.type.get_array_element_type().get_size())
     print('get_canonical().spelling:', n.type.get_canonical().spelling)
     print('get_canonical().kind:', n.type.get_canonical().kind)
-    print('get_class_type():', n.type.get_class_type().kind.spelling)
+    #print('get_class_type():', n.type.get_class_type().kind.spelling)
     print('get_size():', n.type.get_size())
-    print('get_pointee().kind:', n.type.get_pointee().kind)
-    print('get_pointee().kind.spelling:', n.type.get_pointee().kind.spelling)
-    print('get_pointee().spelling:', n.type.get_pointee().spelling)
-    print('get_pointee().get_size():', n.type.get_pointee().get_size())
-    print('get_pointee().get_array_element_type().size:', n.type.get_pointee().get_array_element_type().get_size())
+    #print('get_pointee().kind:', n.type.get_pointee().kind)
+    #print('get_pointee().kind.spelling:', n.type.get_pointee().kind.spelling)
+    #print('get_pointee().spelling:', n.type.get_pointee().spelling)
+    #print('get_pointee().get_size():', n.type.get_pointee().get_size())
+    #print('get_pointee().get_array_element_type().size:', n.type.get_pointee().get_array_element_type().get_size())
     num_args = len(list(n.get_arguments()))
     print('num_args:', num_args)
     children = list(n.get_children())
@@ -81,8 +81,8 @@ def print_node_info(n):
 
     print('children:')
     for c in children:
-        print(str(c.kind)[11:], c.spelling)
-    print("|".join(t.spelling for t in n.get_tokens()))
+        print('  '+str(c.kind)[11:], c.spelling)
+    #print("|".join(t.spelling for t in n.get_tokens()))
     return
 
 def get_type(node):
@@ -141,52 +141,52 @@ def translate_u_operator(operator):
 def translate_operator(operator, lhs_cat=TypeCat.UNKNOWN, rhs_cat=TypeCat.UNKNOWN):
     op = None 
     # Relational Operators
-    if operator == '==':
+    if operator == BinaryOperator.EQ:
         op = Eq()
-    if operator == '!=':
+    if operator == BinaryOperator.NE:
         op = NotEq()
-    if operator == '<':
+    if operator == BinaryOperator.LT:
         op = Lt()
-    if operator == '<=':
+    if operator == BinaryOperator.LE:
         op = LtE()
-    if operator == '>':
+    if operator == BinaryOperator.GT:
         op = Gt()
-    if operator == '>=':
+    if operator == BinaryOperator.GE:
         op = GtE()
     # Arithmetic Operators
-    if operator == '+':
+    if operator == BinaryOperator.Add:
         op = Add()
-    elif operator == '-':
+    elif operator == BinaryOperator.Sub:
         op = Sub()
-    elif operator == '*':
+    elif operator == BinaryOperator.Mul:
         op = Mult()
-    elif operator == '/':
+    elif operator == BinaryOperator.Div:
         if lhs_cat is TypeCat.FLOATING or rhs_cat is TypeCat.FLOATING:
             op = FloorDiv()
         else:
             op = Div()
     # THIS WILL NEVER BE REACHED BECAUSE THERE IS NONE OF THIS IN C, ADD CHECK TO SEE IF BOTH SIDES ARE INTS TO USE THIS!
     # (done - see above)
-    elif operator == '//':
-        op = FloorDiv()
-    elif operator == '%':
+    #elif operator == '//':
+        #op = FloorDiv()
+    elif operator == BinaryOperator.Rem:
         op = Mod()
     # SAME WITH THIS ONE
-    elif operator == '**':
-        op = Pow()
-    elif operator == '<<':
+    #elif operator == '**':
+        #op = Pow()
+    elif operator == BinaryOperator.Shl:
         op = LShift()
-    elif operator == '>>':
+    elif operator == BinaryOperator.Shr:
         op = RShift()
-    elif operator == '|':
+    elif operator == BinaryOperator.Or:
         op = BitOr()
-    elif operator == '^':
+    elif operator == BinaryOperator.Xor:
         op = BitXor()
-    elif operator == '&':
+    elif operator == BinaryOperator.And:
         op = BitAnd()
-    elif operator == '&&':
+    elif operator == BinaryOperator.LAnd:
         op = And()
-    elif operator == '||':
+    elif operator == BinaryOperator.LOr:
         op = Or()
 
     # maybe add this one? I don't know, but it's present in the python ast library

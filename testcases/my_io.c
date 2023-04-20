@@ -5,6 +5,7 @@
 //#include <wctype.h>
 #include "std_testcase.h"
 #include <time.h>
+#include <string.h>
 #ifndef _WIN32
 //#include <wchar.h>
 #endif

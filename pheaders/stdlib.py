@@ -10,14 +10,19 @@ def rand():
     return _rng.randrange(RAND_MAX)
 
 def malloc(size):
-    return Pointer( * size, 0, 1)
+    return Pointer([0] * size, 0, 1)
 
 def free(ptr):
     pass
 
 def calloc(nmemb, size):
-    return Pointer( * nmemb, 0, size)
+    return Pointer([0] * nmemb, 0, size)
 
 def realloc(ptr, size):
     if ptr is None:
         return malloc(size)
+
+def memset(string, c, n):
+    for i in range(c):
+        string[i] = c[i]
+
