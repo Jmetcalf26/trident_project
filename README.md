@@ -19,11 +19,11 @@ To run main parser program with default input file of simple.c and relaxed type 
 
 	./main.py
 	
-To run main parser program with strict typing:
-
-	./main.py -s
 	
 To run main parser program with custom input program:
 
 	./main.py -i <input-filename>
 	
+To run main parser program with custom output filename:
+
+	./main.py -o <output-filename>
